@@ -2013,6 +2013,19 @@ config FB_SH_MOBILE_HDMI
 	---help---
 	  Driver for the on-chip SH-Mobile HDMI controller.
 
+config FB_RCAR
+        bool "R-CarFB"
+	depends on FB && ARCH_SHMOBILE
+	select FB_SYS_FILLRECT
+	select FB_SYS_COPYAREA
+	select FB_SYS_IMAGEBLIT
+	select FB_SYS_FOPS
+	---help---
+	  Frame buffer driver for the Renesas R-Car series Display Unit
+	  controller. The native resolution is 640x480, up to 1280x768
+	  pixels. This module supports RGB565 and RGB888 pixel format
+	  for input.
+
 config FB_TMIO
 	tristate "Toshiba Mobile IO FrameBuffer support"
 	depends on FB && MFD_CORE
