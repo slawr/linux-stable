@@ -325,6 +325,10 @@ int soc_mbus_samples_per_pixel(const struct soc_mbus_pixelfmt *mf,
 		*numerator = 1;
 		*denominator = 1;
 		return 0;
+	case SOC_MBUS_PACKING_EXTEND32:
+		*numerator = 1;
+		*denominator = 1;
+		return 0;
 	case SOC_MBUS_PACKING_2X8_PADHI:
 	case SOC_MBUS_PACKING_2X8_PADLO:
 		*numerator = 2;
@@ -356,6 +360,8 @@ s32 soc_mbus_bytes_per_line(u32 width, const struct soc_mbus_pixelfmt *mf)
 		return width * 3 / 2;
 	case SOC_MBUS_PACKING_VARIABLE:
 		return 0;
+	case SOC_MBUS_PACKING_EXTEND32:
+		return width * 4;
 	}
 	return -EINVAL;
 }
