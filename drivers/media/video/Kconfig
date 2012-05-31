@@ -875,6 +875,16 @@ config VIDEO_VIA_CAMERA
 	   Chrome9 chipsets.  Currently only tested on OLPC xo-1.5 systems
 	   with ov7670 sensors.
 
+config VIDEO_VIN_RCAR
+	tristate "R-Car VIN Unit Interface driver"
+	depends on VIDEO_DEV && SOC_CAMERA && HAS_DMA && HAVE_CLK
+	select VIDEOBUF2_DMA_CONTIG
+	---help---
+	  Support for VIN Unit Interface driver for the Renesas R-Car series
+	  VideoCapture controller.
+
+	  Say Y here if you have enabled, otherwise say N.
+
 #
 # Platform multimedia device configuration
 #
