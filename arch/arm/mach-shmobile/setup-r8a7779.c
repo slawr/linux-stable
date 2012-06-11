@@ -53,6 +53,13 @@ static struct map_desc r8a7779_io_desc[] __initdata = {
 		.length		= SZ_16M,
 		.type		= MT_DEVICE_NONSHARED
 	},
+	/* 16M entity map for 0xffxxxxxx */
+	{
+		.virtual	= 0xf8000000,
+		.pfn		= __phys_to_pfn(0xff000000),
+		.length		= SZ_16M,
+		.type		= MT_DEVICE_NONSHARED
+	},
 };
 
 void __init r8a7779_map_io(void)
