@@ -149,6 +149,8 @@ struct rcar_vin_dev {
 	bool use_bt656;
 
 	struct vb2_buffer *queue_buf[MB_NUM];
+
+	bool data_through;
 	unsigned int vb_count;
 	unsigned int nr_hw_slots;
 	enum rcar_vin_capture_status capture_status;
@@ -290,9 +292,12 @@ static int rcar_vin_videobuf_setup(struct vb2_queue *vq,
 #define VIN_VNMC_FOC		0x00200000 /* Field Order Control */
 #define VIN_VNMC_YCAL		0x00080000 /* YCbCr-422 input data ALignment */
 #define VIN_VNMC_VUP		0x00000400 /* Vin register UPdate control */
-#define VIN_VNMC_INF_YUV8_BT656	0x00000000 /* ITU-R BT.656/8-bit/YCbCr-422 */
-#define VIN_VNMC_INF_YUV8_BT601	0x00010000 /* ITU-R BT.601/8-bit/YCbCr-422 */
-#define VIN_VNMC_INF_YUV16	0x00050000 /* ITU-R BT.1358/16bit/YUV-422 */
+#define VIN_VNMC_INF_YUV8_BT656	0x00000000 /* BT.656/8-bit/YCbCr-422 */
+#define VIN_VNMC_INF_YUV8_BT601	0x00010000 /* BT.601/8-bit/YCbCr-422 */
+#define VIN_VNMC_INF_YUV16	0x00050000 /* BT.1358/16bit/YUV-422 */
+#define VIN_VNMC_INF_RGB888_24	0x00060000 /* BT.601/12 or 24bit/RGB-888 */
+#define VIN_VNMC_INF_RGB666	0x00070000 /* BT.601/18bit/RGB-666 or
+						BT.601/2x12bit/RGB-888 */
 
 #define VIN_VNMC_IM_MASK	0x00000018 /* Interlace Mode */
 #define VIN_VNMC_IM_ODD		0x00000000
@@ -318,6 +323,7 @@ static int rcar_vin_videobuf_setup(struct vb2_queue *vq,
 
 /* VnDMR */
 #define VIN_VNDMR_EVA		0x00010000 /* EVen field Address offset */
+#define VIN_VNDMR_EXRGB		0x00000100 /* Extension RGB Conversion Mode */
 #define VIN_VNDMR_BPSM		0x00000010 /* Byte Position Swap Mode */
 #define VIN_VNDMR_DTMD_YCSEP	0x00000002 /* transfer: YC separate */
 #define VIN_VNDMR_DTMD_ARGB1555	0x00000001 /* transfer: ARGB1555 */
@@ -331,6 +337,7 @@ static int rcar_vin_videobuf_setup(struct vb2_queue *vq,
 #define VIN_VNDMR2_HPS_ACTIVE_LOW	0x00000000
 #define VIN_VNDMR2_HPS_ACTIVE_HIGH	VIN_VNDMR2_HPS
 #define VIN_VNDMR2_CES		0x10000000 /* Clock Enable polarity Select */
+#define VIN_VNDMR2_CHS		0x00800000 /* Clock Enable Hsync Select */
 #define VIN_VNDMR2_FTEV		0x00020000 /* Field Toggle Enable of Vsync */
 
 static bool is_continuous_transfer(struct rcar_vin_dev *pcdev)
@@ -374,6 +381,17 @@ static void rcar_vin_setup(struct rcar_vin_dev *pcdev)
 
 	/* input interface */
 	switch (icd->current_fmt->code) {
+	case V4L2_MBUS_FMT_RGB888_1X24_LE:
+		/* BT.601 24bit RGB-888 */
+		/* FIXME: BT.709 RGB-888 must be also supported. */
+		mc |= VIN_VNMC_INF_RGB888_24;
+		break;
+	case V4L2_MBUS_FMT_RGB888_2X12_LE:
+	case V4L2_MBUS_FMT_RGB666_1X18_LE:
+		/* BT.601 18bit RGB-666 or 2x12bit RGB-888 */
+		/* FIXME: BT.709 RGB-666 must be also supported. */
+		mc |= VIN_VNMC_INF_RGB666;
+		break;
 	case V4L2_MBUS_FMT_YUYV8_1X16:
 		/* BT.1358 16bit YCbCr-422 */
 		mc |= VIN_VNMC_INF_YUV16;
@@ -411,6 +429,10 @@ static void rcar_vin_setup(struct rcar_vin_dev *pcdev)
 	case V4L2_PIX_FMT_RGB565:
 		dmr = 0;
 		mc |= VIN_VNMC_VUP;
+		break;
+	case V4L2_PIX_FMT_RGB32:
+		dmr = VIN_VNDMR_EXRGB;
+		mc |= VIN_VNMC_VUP | VIN_VNMC_BPS;
 		break;
 	default:
 		pr_alert("%s: Invalid fourcc format (0x%x)\n", __func__,
@@ -832,6 +854,7 @@ static int rcar_vin_set_rect(struct soc_camera_device *icd)
 	struct rcar_vin_cam *cam = icd->host_priv;
 	struct rcar_vin_dev *pcdev = ici->priv;
 	unsigned int left_offset, top_offset;
+	unsigned char dsize;
 	struct v4l2_rect *cam_subrect = &cam->subrect;
 
 	dev_geo(icd->parent, "Crop %ux%u@%u:%u\n",
@@ -839,6 +862,8 @@ static int rcar_vin_set_rect(struct soc_camera_device *icd)
 
 	left_offset	= cam->vin_left;
 	top_offset	= cam->vin_top;
+
+	dsize = pcdev->data_through ? 1 : 0;
 
 	dev_geo(icd->parent, "Cam %ux%u@%u:%u\n",
 		cam->width, cam->height, cam->vin_left, cam->vin_top);
@@ -848,8 +873,8 @@ static int rcar_vin_set_rect(struct soc_camera_device *icd)
 
 	/* Set Pre-Clip and Post-Clip areas */
 	/* Set Pre-Clip */
-	vin_write(pcdev, V0SPPrC, left_offset);
-	vin_write(pcdev, V0EPPrC, left_offset + cam->width - 1);
+	vin_write(pcdev, V0SPPrC, left_offset << dsize);
+	vin_write(pcdev, V0EPPrC, (left_offset + cam->width - 1) << dsize);
 	if ((pcdev->field == V4L2_FIELD_INTERLACED) ||
 		(pcdev->field == V4L2_FIELD_INTERLACED_TB) ||
 		(pcdev->field == V4L2_FIELD_INTERLACED_BT)) {
@@ -863,7 +888,7 @@ static int rcar_vin_set_rect(struct soc_camera_device *icd)
 	/* Set Post-Clip */
 	vin_write(pcdev, V0SPPoC, 0);
 	vin_write(pcdev, V0SLPoC, 0);
-	vin_write(pcdev, V0EPPoC, cam_subrect->width - 1);
+	vin_write(pcdev, V0EPPoC, (cam_subrect->width - 1) << dsize);
 	if ((pcdev->field == V4L2_FIELD_INTERLACED) ||
 		(pcdev->field == V4L2_FIELD_INTERLACED_TB) ||
 		(pcdev->field == V4L2_FIELD_INTERLACED_BT))
@@ -871,7 +896,7 @@ static int rcar_vin_set_rect(struct soc_camera_device *icd)
 	else
 		vin_write(pcdev, V0ELPoC, cam_subrect->height - 1);
 
-	vin_write(pcdev, V0IS, ((cam->width + 15) & ~0xf));
+	vin_write(pcdev, V0IS, (cam->width + 15) & ~0xf);
 
 	return 0;
 }
@@ -969,6 +994,14 @@ static int rcar_vin_set_bus_param(struct soc_camera_device *icd)
 		VIN_VNDMR2_VPS_ACTIVE_LOW : VIN_VNDMR2_VPS_ACTIVE_HIGH;
 	value |= common_flags & V4L2_MBUS_HSYNC_ACTIVE_LOW ?
 		VIN_VNDMR2_HPS_ACTIVE_LOW : VIN_VNDMR2_HPS_ACTIVE_HIGH;
+
+	/* TODO Generate Clock Enable signal from Hsync */
+	/* Required for cameras that don't output a clock enable signal, e.g.
+	   the ov10635 in BT.601 mode. This is not needed when connecting
+	   cameras with BT.656 output. */
+#ifdef GENERATE_CLKENB_FROM_HSYNC
+	value |= VIN_VNDMR2_CHS;
+#endif
 
 	/* set Data Mode Register2 */
 	vin_write(pcdev, V0DMR2, value);
@@ -1133,6 +1166,9 @@ static int rcar_vin_get_formats(struct soc_camera_device *icd, unsigned int idx,
 		cam->extra_fmt = NULL;
 
 	switch (code) {
+	case V4L2_MBUS_FMT_RGB888_1X24_LE:
+	case V4L2_MBUS_FMT_RGB888_2X12_LE:
+	case V4L2_MBUS_FMT_RGB666_1X18_LE:
 	case V4L2_MBUS_FMT_YUYV8_1X16:
 	case V4L2_MBUS_FMT_YUYV8_2X8:
 		if (cam->extra_fmt)
@@ -1652,6 +1688,7 @@ static int rcar_vin_set_fmt(struct soc_camera_device *icd,
 	u16 scale_v, scale_h;
 	int ret;
 	bool can_scale;
+	bool data_through;
 	enum v4l2_field field;
 
 	dev_geo(dev, "S_FMT(pix=0x%x, %ux%u)\n",
@@ -1684,13 +1721,8 @@ static int rcar_vin_set_fmt(struct soc_camera_device *icd,
 	mf.colorspace	= pix->colorspace;
 	mf.code		= xlate->code;
 
-	switch (pixfmt) {
-	case V4L2_PIX_FMT_NV16:
-		can_scale = false;
-		break;
-	default:
-		can_scale = true;
-	}
+	data_through = (pixfmt == V4L2_PIX_FMT_RGB32);
+	can_scale = (!data_through && (pixfmt != V4L2_PIX_FMT_NV16));
 
 	dev_geo(dev, "4: request camera output %ux%u\n", mf.width, mf.height);
 
@@ -1749,6 +1781,7 @@ static int rcar_vin_set_fmt(struct soc_camera_device *icd,
 	icd->current_fmt	= xlate;
 
 	pcdev->field = field;
+	pcdev->data_through = data_through;
 
 	return 0;
 }
