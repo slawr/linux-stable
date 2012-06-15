@@ -50,6 +50,9 @@
 
 static struct i2c_board_info marzen_i2c_devices[] = {
 	{ I2C_BOARD_INFO("ak4642", 0x12), },
+#ifdef CONFIG_MACH_MARZEN_REE_EDC_EXP_BOARD
+	{ I2C_BOARD_INFO("tfp410", 0x3f), },
+#endif
 };
 
 /* Fixed 3.3V regulator to be used by SDHI0 */
