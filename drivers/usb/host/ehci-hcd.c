@@ -1385,6 +1385,11 @@ MODULE_LICENSE ("GPL");
 #define PLATFORM_DRIVER		ehci_platform_driver
 #endif
 
+#ifdef CONFIG_ARCH_R8A7779
+#include "ehci-rcar.c"
+#define	PLATFORM_DRIVER		rcar_ehci_driver
+#endif
+
 #if !defined(PCI_DRIVER) && !defined(PLATFORM_DRIVER) && \
     !defined(PS3_SYSTEM_BUS_DRIVER) && !defined(OF_PLATFORM_DRIVER) && \
     !defined(XILINX_OF_PLATFORM_DRIVER)
