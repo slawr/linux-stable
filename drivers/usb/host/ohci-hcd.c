@@ -1120,6 +1120,11 @@ MODULE_LICENSE ("GPL");
 #define PLATFORM_DRIVER		ohci_platform_driver
 #endif
 
+#ifdef CONFIG_ARCH_R8A7779
+#include "ohci-rcar.c"
+#define PLATFORM_DRIVER		rcar_ohci_driver
+#endif
+
 #if	!defined(PCI_DRIVER) &&		\
 	!defined(PLATFORM_DRIVER) &&	\
 	!defined(OMAP1_PLATFORM_DRIVER) &&	\
