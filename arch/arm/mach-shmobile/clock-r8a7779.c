@@ -90,7 +90,7 @@ enum { MSTP323, MSTP322, MSTP321, MSTP320,
 	MSTP101, MSTP100,
 	MSTP030,
 	MSTP029, MSTP028, MSTP027, MSTP026, MSTP025, MSTP024, MSTP023, MSTP022, MSTP021,
-	MSTP016, MSTP015, MSTP014,
+	MSTP016, MSTP015, MSTP014, MSTP012, MSTP011, MSTP008,
 	MSTP007,
 	MSTP_NR };
 
@@ -114,6 +114,9 @@ static struct clk mstp_clks[MSTP_NR] = {
 	[MSTP016] = SH_CLK_MSTP32(&div4_clks[DIV4_P], MSTPCR0, 16, 0), /* TMU0 */
 	[MSTP015] = SH_CLK_MSTP32(&div4_clks[DIV4_P], MSTPCR0, 15, 0), /* TMU1 */
 	[MSTP014] = SH_CLK_MSTP32(&div4_clks[DIV4_P], MSTPCR0, 14, 0), /* TMU2 */
+	[MSTP012] = SH_CLK_MSTP32(&div4_clks[DIV4_P], MSTPCR0, 12, 0), /* Audio */
+	[MSTP011] = SH_CLK_MSTP32(&div4_clks[DIV4_P], MSTPCR0, 11, 0), /* Audio */
+	[MSTP008] = SH_CLK_MSTP32(&div4_clks[DIV4_P], MSTPCR0, 8, 0), /* Audio */
 	[MSTP007] = SH_CLK_MSTP32(&div4_clks[DIV4_S], MSTPCR0,  7, 0), /* HSPI */
 };
 
@@ -178,6 +181,10 @@ static struct clk_lookup lookups[] = {
 
 	CLKDEV_CON_ID("usb_fck", &mstp_clks[MSTP100]),
 	CLKDEV_CON_ID("usb_fck2", &mstp_clks[MSTP101]),
+
+	CLKDEV_CON_ID("ssi0", &mstp_clks[MSTP012]),
+	CLKDEV_CON_ID("ssi1", &mstp_clks[MSTP011]),
+	CLKDEV_CON_ID("sru", &mstp_clks[MSTP008]),
 };
 
 void __init r8a7779_clock_init(void)
