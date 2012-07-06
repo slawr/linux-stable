@@ -53,3 +53,4 @@ obj-$(CONFIG_MACH_MARZEN)	+= board-marzen.o
 # Framework support
 obj-$(CONFIG_SMP)		+= $(smp-y)
 obj-$(CONFIG_GENERIC_GPIO)	+= $(pfc-y)
+obj-$(CONFIG_RCAR_HPB_DMAE)	+= hpb-dmae.o
