@@ -32,6 +32,7 @@
 #include <mach/irqs.h>
 #include <mach/r8a7779.h>
 #include <mach/common.h>
+#include <mach/hpb-dmae.h>
 #include <asm/mach-types.h>
 #include <asm/mach/arch.h>
 #include <asm/mach/time.h>
@@ -316,6 +317,9 @@ static struct platform_device *r8a7779_early_devices[] __initdata = {
 	&scif3_device,
 	&scif4_device,
 	&scif5_device,
+#ifdef CONFIG_RCAR_HPB_DMAE
+	&rcar_dma_device,
+#endif
 	&tmu00_device,
 	&tmu01_device,
 	&i2c0_device,
