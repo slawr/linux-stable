@@ -156,6 +156,16 @@ config SH_DMAE
 	help
 	  Enable support for the Renesas SuperH DMA controllers.
 
+config RCAR_HPB_DMAE
+	tristate "Renesas R-Car HPB DMAC support"
+	depends on (SUPERH && SH_DMA) || (ARM && ARCH_SHMOBILE)
+	select DMA_ENGINE
+	help
+	  Enable support for the Renesas R-Car series DMA controllers.
+	  This is supported to HPB-DMAC.
+
+	  Say Y here if you have enabled, otherwise say N.
+
 config COH901318
 	bool "ST-Ericsson COH901318 DMA support"
 	select DMA_ENGINE
