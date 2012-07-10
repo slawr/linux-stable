@@ -1,0 +1,21 @@
+menu "SoC Audio support for R-Car"
+	depends on ARCH_RCAR || MACH_MARZEN
+
+##
+## Audio unit modules
+##
+
+config SND_SOC_RCAR
+	tristate "R-Car Marzen sound support"
+	select SND_HWDEP
+	help
+	  This option enables R-Car Marzen platform sound support
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called snd_soc_rcar.
+
+##
+## Boards
+##
+
+endmenu
