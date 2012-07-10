@@ -8,6 +8,7 @@ menu "SoC Audio support for R-Car"
 config SND_SOC_RCAR
 	tristate "R-Car Marzen sound support"
 	select SND_HWDEP
+	select SND_RCAR_AK4643
 	help
 	  This option enables R-Car Marzen platform sound support
 
@@ -17,5 +18,18 @@ config SND_SOC_RCAR
 ##
 ## Boards
 ##
+
+config SND_RCAR_AK4643
+	tristate "R-Car AK4643 sound support"
+	depends on SND_SOC_RCAR
+	select SND_SOC_AK4642
+	help
+	  This option enables the sound support for
+	  AK4643 unit of R-Car platform.
+
+config SND_SOC_AK4643_RCAR
+	bool
+	depends on SND_RCAR_AK4643
+	default y
 
 endmenu
