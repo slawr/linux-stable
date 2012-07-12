@@ -1232,3 +1232,11 @@ config VIDEO_MX2_EMMAPRP
 	    conversion.
 
 endif # V4L_MEM2MEM_DRIVERS
+
+config VIDEO_TFP410
+	tristate "TI PanelBus DVI Transmitter"
+	depends on I2C
+	---help---
+	  Support for the TFP410 DVI Transmitter from TI.
+
+	  This module simply enables output on driver startup.
