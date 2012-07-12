@@ -44,6 +44,10 @@
 #include <asm/hardware/gic.h>
 #include <asm/traps.h>
 
+static struct i2c_board_info marzen_i2c_devices[] = {
+	{ I2C_BOARD_INFO("ak4642", 0x12), },
+};
+
 /* Fixed 3.3V regulator to be used by SDHI0 */
 static struct regulator_consumer_supply fixed3v3_power_consumers[] = {
 	REGULATOR_SUPPLY("vmmc", "sh_mobile_sdhi.0"),
@@ -394,6 +398,33 @@ static int __init rcar_usbh_init(void)
 	return 0;
 }
 
+static struct platform_device alsa_soc_platform_device = {
+	.name		= "rcar_alsa_soc_platform",
+	.id		= 0,
+};
+
+static struct resource sru_resources[] = {
+	[0] = {
+		.name   = "sru",
+		.start  = 0xffd90000,
+		.end    = 0xffd97fff,
+		.flags  = IORESOURCE_MEM,
+	},
+	[1] = {
+		.name   = "adg",
+		.start  = 0xfffe0000,
+		.end    = 0xfffe1000,
+		.flags  = IORESOURCE_MEM,
+	},
+};
+
+static struct platform_device sru_device = {
+	.name		= "rcar_sru",
+	.id		= 0,
+	.num_resources	= ARRAY_SIZE(sru_resources),
+	.resource	= sru_resources,
+};
+
 static struct platform_device *marzen_devices[] __initdata = {
 	&eth_device,
 	&sdhi0_device,
@@ -403,6 +434,8 @@ static struct platform_device *marzen_devices[] __initdata = {
 	&ohci0_device,
 	&ehci1_device,
 	&ohci1_device,
+	&alsa_soc_platform_device,
+	&sru_device,
 };
 
 static void __init marzen_init(void)
@@ -447,8 +480,24 @@ static void __init marzen_init(void)
 	gpio_request(GPIO_FN_USB_OVC1, NULL);
 	gpio_request(GPIO_FN_USB_OVC2, NULL);
 
+	/* I2C 0 */
+	gpio_request(GPIO_FN_SCL1, NULL);
+	gpio_request(GPIO_FN_SDA1, NULL);
+
+	/* SSI */
+	gpio_request(GPIO_FN_SSI_SDATA0, NULL);
+	gpio_request(GPIO_FN_SSI_SDATA1, NULL);
+	gpio_request(GPIO_FN_SSI_SCK0129, NULL);
+	gpio_request(GPIO_FN_SSI_WS0129, NULL);
+
+	/* Audio Clock */
+	gpio_request(GPIO_FN_AUDIO_CLKA, NULL);
+
 	r8a7779_add_standard_devices();
 	platform_add_devices(marzen_devices, ARRAY_SIZE(marzen_devices));
+
+	i2c_register_board_info(0, marzen_i2c_devices,
+				ARRAY_SIZE(marzen_i2c_devices));
 
 	rcar_usbh_init();
 }
