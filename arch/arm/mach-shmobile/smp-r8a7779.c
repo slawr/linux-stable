@@ -29,6 +29,9 @@
 #include <asm/smp_scu.h>
 #include <asm/smp_twd.h>
 #include <asm/hardware/gic.h>
+#ifdef CONFIG_CACHE_PL310_FULL_LINE_OF_ZERO
+#include <asm/hardware/cache-l2x0.h>
+#endif
 
 #define AVECR IOMEM(0xfe700040)
 
@@ -116,6 +119,14 @@ int r8a7779_platform_cpu_kill(unsigned int cpu)
 void __cpuinit r8a7779_secondary_init(unsigned int cpu)
 {
 	gic_secondary_init(0);
+
+	/* Enable Write full line of zeros feature in the Cortex-A9
+	 * at booting by cpu hotplug, because this feature setting in
+	 * R-Car H1 has been cleared by cpu power off.
+	 */
+#ifdef CONFIG_CACHE_PL310_FULL_LINE_OF_ZERO
+	cache_ca9_full_line_of_zero(NULL);
+#endif
 }
 
 int __cpuinit r8a7779_boot_secondary(unsigned int cpu)

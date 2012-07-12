@@ -1,6 +1,7 @@
 /*
  * arch/arm/mm/cache-l2x0.c - L210/L220 cache controller support
  *
+ * Copyright (C) 2012 Renesas Electronics Corporation
  * Copyright (C) 2007 ARM Limited
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +23,9 @@
 #include <linux/io.h>
 #include <linux/of.h>
 #include <linux/of_address.h>
+#ifdef CONFIG_CACHE_PL310_FULL_LINE_OF_ZERO
+#include <linux/smp.h>
+#endif
 
 #include <asm/cacheflush.h>
 #include <asm/hardware/cache-l2x0.h>
@@ -35,6 +39,33 @@ static u32 l2x0_size;
 static unsigned long sync_reg_offset = L2X0_CACHE_SYNC;
 
 struct l2x0_regs l2x0_saved_regs;
+
+#ifdef CONFIG_CACHE_PL310_FULL_LINE_OF_ZERO
+/*
+ * cache_ca9_full_line_of_zero() performs to enable Write full line of zeros
+ * feature in the Cortex-A9 processor. This function must be called after
+ * enabling this feature in the L2C-310 cache controller.
+ */
+void cache_ca9_full_line_of_zero(void *ignored)
+{
+	unsigned long actlr;
+
+	/* If L2C-310 is not enabled, don't have to enable it in Cortex-A9. */
+	if (!l2x0_base)
+		return;
+	if (!(readl_relaxed(l2x0_base + L2X0_CTRL) & 1))
+		return;
+
+	/* Enable Write full line of zeros. */
+	asm volatile(
+	"	mrc	p15, 0, %0, c1, c0, 1\n"
+	"	orr	%0, %0, #1 << 3\n"
+	"	mcr	p15, 0, %0, c1, c0, 1\n"
+	  : "=&r" (actlr)
+	  :
+	  : "cc");
+}
+#endif
 
 struct l2x0_of_data {
 	void (*setup)(const struct device_node *, u32 *, u32 *);
@@ -310,6 +341,8 @@ void __init l2x0_init(void __iomem *base, u32 aux_val, u32 aux_mask)
 {
 	u32 aux;
 	u32 cache_id;
+	u32 prefetch, prefetch_val = 0;
+	u32 power;
 	u32 way_size = 0;
 	int ways;
 	const char *type;
@@ -319,8 +352,8 @@ void __init l2x0_init(void __iomem *base, u32 aux_val, u32 aux_mask)
 	cache_id = readl_relaxed(l2x0_base + L2X0_CACHE_ID);
 	aux = readl_relaxed(l2x0_base + L2X0_AUX_CTRL);
 
-	aux &= aux_mask;
-	aux |= aux_val;
+	prefetch = readl_relaxed(l2x0_base + L2X0_PREFETCH_CTRL);
+	power = readl_relaxed(l2x0_base + L2X0_POWER_CTRL);
 
 	/* Determine the number of ways */
 	switch (cache_id & L2X0_CACHE_ID_PART_MASK) {
@@ -330,6 +363,52 @@ void __init l2x0_init(void __iomem *base, u32 aux_val, u32 aux_mask)
 		else
 			ways = 8;
 		type = "L310";
+
+		/*
+		 * Set bit 22 in the auxiliary control register. If this bit
+		 * is cleared, PL310 treats Normal Shared Non-cacheable
+		 * accesses as Cacheable no-allocate.
+		 */
+#ifdef CONFIG_CACHE_PL310_SHARED_ATTRIBUTE_OVERRIDE
+		aux_val |= 1 << 22;
+#endif
+		/*
+		 * Enable internal instruction and data prefetching engine
+		 * if configured.
+		 */
+#ifdef CONFIG_CACHE_PL310_INSN_PREFETCH
+		aux_val |= 1 << 29;
+		prefetch_val |= 1 << 29;
+#endif
+#ifdef CONFIG_CACHE_PL310_DATA_PREFETCH
+		aux_val |= 1 << 28;
+		prefetch_val |= 1 << 28;
+#endif
+		/*
+		 * Enable prefetch-related features that can improve system
+		 * performance.  All bits in the prefetch control register
+		 * are set to zero by default, and we assume here that no
+		 * preceding softwares such as bootloaders set up these bits.
+		 */
+#ifdef CONFIG_CACHE_PL310_PREFETCH_DOUBLE_LINEFILL
+		/* safely available in r3p2 or later */
+		if ((cache_id & 0x3f) > 0x6) {
+			prefetch_val |= 1 << 30;
+			prefetch_val |= 1 << 23;
+			/* bit 27 is 0 */
+		}
+#endif
+#ifdef CONFIG_CACHE_PL310_PREFETCH_DROP
+		/* safely available in r3p1 or later */
+		if ((cache_id & 0x3f) > 0x5)
+			prefetch_val |= 1 << 24;
+#endif
+#ifdef CONFIG_CACHE_PL310_DYNAMIC_CLOCK_GATING
+		power |= 1 << 1;
+#endif
+#ifdef CONFIG_CACHE_PL310_FULL_LINE_OF_ZERO
+		aux_val |= 1 << 0;
+#endif
 #ifdef CONFIG_PL310_ERRATA_753970
 		/* Unmapped register. */
 		sync_reg_offset = L2X0_DUMMY_REG;
@@ -365,8 +444,14 @@ void __init l2x0_init(void __iomem *base, u32 aux_val, u32 aux_mask)
 		/* Make sure that I&D is not locked down when starting */
 		l2x0_unlock(cache_id);
 
+		aux &= aux_mask;
+		aux |= aux_val;
+		prefetch |= prefetch_val;
+
 		/* l2x0 controller is disabled */
 		writel_relaxed(aux, l2x0_base + L2X0_AUX_CTRL);
+		writel_relaxed(prefetch, l2x0_base + L2X0_PREFETCH_CTRL);
+		writel_relaxed(power, l2x0_base + L2X0_POWER_CTRL);
 
 		l2x0_saved_regs.aux_ctrl = aux;
 
@@ -375,6 +460,11 @@ void __init l2x0_init(void __iomem *base, u32 aux_val, u32 aux_mask)
 		/* enable L2X0 */
 		writel_relaxed(1, l2x0_base + L2X0_CTRL);
 	}
+
+#ifdef CONFIG_CACHE_PL310_FULL_LINE_OF_ZERO
+	/* Enable Write full line of zeros feature on each cpus. */
+	on_each_cpu(cache_ca9_full_line_of_zero, NULL, 1);
+#endif
 
 	outer_cache.inv_range = l2x0_inv_range;
 	outer_cache.clean_range = l2x0_clean_range;
@@ -385,8 +475,9 @@ void __init l2x0_init(void __iomem *base, u32 aux_val, u32 aux_mask)
 	outer_cache.disable = l2x0_disable;
 
 	printk(KERN_INFO "%s cache controller enabled\n", type);
-	printk(KERN_INFO "l2x0: %d ways, CACHE_ID 0x%08x, AUX_CTRL 0x%08x, Cache size: %d B\n",
-			ways, cache_id, aux, l2x0_size);
+	printk(KERN_INFO "l2x0: %d ways, CACHE_ID 0x%08x, AUX_CTRL 0x%08x, "
+			 "PREFETCH_CTRL 0x%08x, Cache size: %d B\n",
+			ways, cache_id, aux, prefetch, l2x0_size);
 }
 
 #ifdef CONFIG_OF

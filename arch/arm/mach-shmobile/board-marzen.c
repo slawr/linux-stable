@@ -45,6 +45,7 @@
 #include <asm/mach-types.h>
 #include <asm/mach/arch.h>
 #include <asm/hardware/gic.h>
+#include <asm/hardware/cache-l2x0.h>
 #include <asm/traps.h>
 
 static struct i2c_board_info marzen_i2c_devices[] = {
@@ -658,6 +659,11 @@ static void __init marzen_init(void)
 				ARRAY_SIZE(fixed3v3_power_consumers));
 	regulator_register_fixed(0, dummy_supplies,
 				ARRAY_SIZE(dummy_supplies));
+
+#ifdef CONFIG_CACHE_L2X0
+	/* Early BRESP enable, 64K*16way */
+	l2x0_init(IOMEM(0xf0100000), 0x40070000, 0x82000fff);
+#endif
 
 	r8a7779_pinmux_init();
 
