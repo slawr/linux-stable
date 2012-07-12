@@ -24,6 +24,7 @@
 #include <linux/io.h>
 #include <mach/common.h>
 #include <mach/intc.h>
+#include <mach/irqs.h>
 #include <mach/r8a7779.h>
 #include <asm/hardware/gic.h>
 #include <asm/mach-types.h>
@@ -52,9 +53,33 @@ struct intc2_parent {
 };
 
 /*
+ * USB Host children
+ */
+static struct intc2_child usbh0_child[] = {
+	{ (1<<1), IRQ_USBH_0_EHCI },
+	{ (1<<0), IRQ_USBH_0_OHCI },
+};
+static struct intc2_child usbh1_child[] = {
+	{ (1<<5), IRQ_USBH_1_EHCI },
+	{ (1<<4), IRQ_USBH_1_OHCI },
+};
+
+/*
  * Parents
  */
 static struct intc2_parent intc2_parent_desc[] = {
+	{
+		gic_spi(44),
+		IOMEM(0xfe782058),
+		ARRAY_SIZE(usbh0_child),
+		usbh0_child
+	},
+	{
+		gic_spi(45),
+		IOMEM(0xfe782058),
+		ARRAY_SIZE(usbh1_child),
+		usbh1_child
+	},
 };
 
 static void intc2_demux(unsigned int irq, struct irq_desc *desc)
