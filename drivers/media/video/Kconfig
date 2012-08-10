@@ -1067,6 +1067,12 @@ config SOC_CAMERA_OV9740
 	help
 	  This is a ov9740 camera driver
 
+config SOC_CAMERA_OV10635
+	tristate "ov10635 camera support"
+	depends on SOC_CAMERA && I2C
+	help
+	  This is an OmniVision ov10635 camera driver
+
 config MX1_VIDEO
 	bool
 
