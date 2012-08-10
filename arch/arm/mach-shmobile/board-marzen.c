@@ -641,7 +641,9 @@ static struct platform_device rcar_vin3_device = {
 };
 
 static struct i2c_board_info marzen_i2c_camera[] = {
+	{ I2C_BOARD_INFO("ov10635", 0x30), },
 	{ I2C_BOARD_INFO("adv7180", 0x20), },
+	{ I2C_BOARD_INFO("ov10635", 0x32), },
 	{ I2C_BOARD_INFO("adv7180", 0x21), },
 };
 
@@ -665,18 +667,34 @@ static int adv7180_power(struct device *dev, int mode)
 	return 0;
 }
 
-static struct soc_camera_link adv7180_ch1_link = {
-	.bus_id = 1,
+static struct soc_camera_link ov10635_ch0_link = {
+	.bus_id = 0,
 	.power  = adv7180_power,
 	.board_info = &marzen_i2c_camera[0],
 	.i2c_adapter_id = 0,
+	.module_name = "ov10635",
+};
+
+static struct soc_camera_link adv7180_ch1_link = {
+	.bus_id = 1,
+	.power  = adv7180_power,
+	.board_info = &marzen_i2c_camera[1],
+	.i2c_adapter_id = 0,
 	.module_name = "adv7180",
+};
+
+static struct soc_camera_link ov10635_ch2_link = {
+	.bus_id = 2,
+	.power  = adv7180_power,
+	.board_info = &marzen_i2c_camera[2],
+	.i2c_adapter_id = 0,
+	.module_name = "ov10635",
 };
 
 static struct soc_camera_link adv7180_ch3_link = {
 	.bus_id = 3,
 	.power  = adv7180_power,
-	.board_info = &marzen_i2c_camera[1],
+	.board_info = &marzen_i2c_camera[3],
 	.i2c_adapter_id = 0,
 	.module_name = "adv7180",
 };
@@ -686,12 +704,26 @@ static struct platform_device rcar_camera[] = {
 		.name = "soc-camera-pdrv",
 		.id = 0,
 		.dev = {
-			.platform_data = &adv7180_ch1_link,
+			.platform_data = &ov10635_ch0_link,
 		},
 	},
 	{
 		.name = "soc-camera-pdrv",
 		.id = 1,
+		.dev = {
+			.platform_data = &adv7180_ch1_link,
+		},
+	},
+	{
+		.name = "soc-camera-pdrv",
+		.id = 2,
+		.dev = {
+			.platform_data = &ov10635_ch2_link,
+		},
+	},
+	{
+		.name = "soc-camera-pdrv",
+		.id = 3,
 		.dev = {
 			.platform_data = &adv7180_ch3_link,
 		},
@@ -712,12 +744,26 @@ static struct platform_device *marzen_devices[] __initdata = {
 	&alsa_soc_platform_device,
 	&sru_device,
 	&rcar_display_device,
+#ifdef CONFIG_MACH_MARZEN_REE_EDC_EXP_BOARD
 	&rcar_vin0_device,
+#endif
 	&rcar_vin1_device,
+#ifdef CONFIG_MACH_MARZEN_REE_EDC_EXP_BOARD
+#ifndef CONFIG_MACH_MARZEN_REE_EDC_EXP_BOARD_DU1
 	&rcar_vin2_device,
+#endif
+#endif
 	&rcar_vin3_device,
+#ifdef CONFIG_MACH_MARZEN_REE_EDC_EXP_BOARD
 	&rcar_camera[0],
+#endif
 	&rcar_camera[1],
+#ifdef CONFIG_MACH_MARZEN_REE_EDC_EXP_BOARD
+#ifndef CONFIG_MACH_MARZEN_REE_EDC_EXP_BOARD_DU1
+	&rcar_camera[2],
+#endif
+#endif
+	&rcar_camera[3],
 };
 
 static void __init marzen_init(void)
@@ -834,6 +880,17 @@ static void __init marzen_init(void)
 	/* Audio Clock */
 	gpio_request(GPIO_FN_AUDIO_CLKA, NULL);
 
+	/* VIN0 */
+	gpio_request(GPIO_FN_VI0_CLK, NULL);
+	gpio_request(GPIO_FN_VI0_DATA7_VI0_B7, NULL);
+	gpio_request(GPIO_FN_VI0_DATA6_VI0_B6, NULL);
+	gpio_request(GPIO_FN_VI0_DATA5_VI0_B5, NULL);
+	gpio_request(GPIO_FN_VI0_DATA4_VI0_B4, NULL);
+	gpio_request(GPIO_FN_VI0_DATA3_VI0_B3, NULL);
+	gpio_request(GPIO_FN_VI0_DATA2_VI0_B2, NULL);
+	gpio_request(GPIO_FN_VI0_DATA1_VI0_B1, NULL);
+	gpio_request(GPIO_FN_VI0_DATA0_VI0_B0, NULL);
+
 	/* VIN1 */
 	gpio_request(GPIO_FN_VI1_CLK, NULL);
 	gpio_request(GPIO_FN_VI1_DATA7_VI1_B7, NULL);
@@ -844,6 +901,19 @@ static void __init marzen_init(void)
 	gpio_request(GPIO_FN_VI1_DATA2_VI1_B2, NULL);
 	gpio_request(GPIO_FN_VI1_DATA1_VI1_B1, NULL);
 	gpio_request(GPIO_FN_VI1_DATA0_VI1_B0, NULL);
+
+#ifndef CONFIG_MACH_MARZEN_REE_EDC_EXP_BOARD_DU1
+	/* VIN2 */
+	gpio_request(GPIO_FN_VI2_CLK, NULL);
+	gpio_request(GPIO_FN_VI2_DATA7_VI2_B7, NULL);
+	gpio_request(GPIO_FN_VI2_DATA6_VI2_B6, NULL);
+	gpio_request(GPIO_FN_VI2_DATA5_VI2_B5, NULL);
+	gpio_request(GPIO_FN_VI2_DATA4_VI2_B4, NULL);
+	gpio_request(GPIO_FN_VI2_DATA3_VI2_B3, NULL);
+	gpio_request(GPIO_FN_VI2_DATA2_VI2_B2, NULL);
+	gpio_request(GPIO_FN_VI2_DATA1_VI2_B1, NULL);
+	gpio_request(GPIO_FN_VI2_DATA0_VI2_B0, NULL);
+#endif
 
 	/* VIN3 */
 	gpio_request(GPIO_FN_VI3_CLK, NULL);
