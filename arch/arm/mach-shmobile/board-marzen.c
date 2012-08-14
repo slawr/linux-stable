@@ -642,9 +642,17 @@ static struct platform_device rcar_vin3_device = {
 
 static struct i2c_board_info marzen_i2c_camera[] = {
 	{ I2C_BOARD_INFO("ov10635", 0x30), },
+#ifdef CONFIG_MACH_MARZEN_REE_EDC_EXP_BOARD
+	{ I2C_BOARD_INFO("ov10635", 0x31), },
+#else
 	{ I2C_BOARD_INFO("adv7180", 0x20), },
+#endif
 	{ I2C_BOARD_INFO("ov10635", 0x32), },
+#ifdef CONFIG_MACH_MARZEN_REE_EDC_EXP_BOARD
+	{ I2C_BOARD_INFO("ov10635", 0x34), },
+#else
 	{ I2C_BOARD_INFO("adv7180", 0x21), },
+#endif
 };
 
 static void camera_power_on(void)
@@ -657,7 +665,7 @@ static void camera_power_off(void)
 	return;
 }
 
-static int adv7180_power(struct device *dev, int mode)
+static int ov10635_power(struct device *dev, int mode)
 {
 	if (mode)
 		camera_power_on();
@@ -669,34 +677,34 @@ static int adv7180_power(struct device *dev, int mode)
 
 static struct soc_camera_link ov10635_ch0_link = {
 	.bus_id = 0,
-	.power  = adv7180_power,
+	.power  = ov10635_power,
 	.board_info = &marzen_i2c_camera[0],
 	.i2c_adapter_id = 0,
 	.module_name = "ov10635",
 };
 
-static struct soc_camera_link adv7180_ch1_link = {
+static struct soc_camera_link ov10635_ch1_link = {
 	.bus_id = 1,
-	.power  = adv7180_power,
+	.power  = ov10635_power,
 	.board_info = &marzen_i2c_camera[1],
 	.i2c_adapter_id = 0,
-	.module_name = "adv7180",
+	.module_name = "ov10635",
 };
 
 static struct soc_camera_link ov10635_ch2_link = {
 	.bus_id = 2,
-	.power  = adv7180_power,
+	.power  = ov10635_power,
 	.board_info = &marzen_i2c_camera[2],
 	.i2c_adapter_id = 0,
 	.module_name = "ov10635",
 };
 
-static struct soc_camera_link adv7180_ch3_link = {
+static struct soc_camera_link ov10635_ch3_link = {
 	.bus_id = 3,
-	.power  = adv7180_power,
+	.power  = ov10635_power,
 	.board_info = &marzen_i2c_camera[3],
 	.i2c_adapter_id = 0,
-	.module_name = "adv7180",
+	.module_name = "ov10635",
 };
 
 static struct platform_device rcar_camera[] = {
@@ -711,7 +719,7 @@ static struct platform_device rcar_camera[] = {
 		.name = "soc-camera-pdrv",
 		.id = 1,
 		.dev = {
-			.platform_data = &adv7180_ch1_link,
+			.platform_data = &ov10635_ch1_link,
 		},
 	},
 	{
@@ -725,7 +733,7 @@ static struct platform_device rcar_camera[] = {
 		.name = "soc-camera-pdrv",
 		.id = 3,
 		.dev = {
-			.platform_data = &adv7180_ch3_link,
+			.platform_data = &ov10635_ch3_link,
 		},
 	},
 };
