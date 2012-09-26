@@ -738,7 +738,11 @@ static struct platform_device rcar_vin3_device = {
 };
 
 static struct i2c_board_info marzen_i2c_camera[] = {
+#ifndef CONFIG_MACH_MARZEN_REE_EDC_EXP_BOARD_24BIT_VIN
 	{ I2C_BOARD_INFO("ov10635", 0x30), },
+#else
+	{ I2C_BOARD_INFO("rgb24bit", 0x30), },
+#endif
 #ifdef CONFIG_MACH_MARZEN_REE_EDC_EXP_BOARD
 	{ I2C_BOARD_INFO("ov10635", 0x31), },
 #else
@@ -777,7 +781,11 @@ static struct soc_camera_link ov10635_ch0_link = {
 	.power  = ov10635_power,
 	.board_info = &marzen_i2c_camera[0],
 	.i2c_adapter_id = 0,
+#ifndef CONFIG_MACH_MARZEN_REE_EDC_EXP_BOARD_24BIT_VIN
 	.module_name = "ov10635",
+#else
+	.module_name = "rgb24bit",
+#endif
 };
 
 static struct soc_camera_link ov10635_ch1_link = {
@@ -1000,6 +1008,29 @@ static void __init marzen_init(void)
 	gpio_request(GPIO_FN_VI0_DATA2_VI0_B2, NULL);
 	gpio_request(GPIO_FN_VI0_DATA1_VI0_B1, NULL);
 	gpio_request(GPIO_FN_VI0_DATA0_VI0_B0, NULL);
+
+#ifdef CONFIG_MACH_MARZEN_REE_EDC_EXP_BOARD_24BIT_VIN
+	gpio_request(GPIO_FN_VI0_G7, NULL);
+	gpio_request(GPIO_FN_VI0_G6, NULL);
+	gpio_request(GPIO_FN_VI0_G5, NULL);
+	gpio_request(GPIO_FN_VI0_G4, NULL);
+	gpio_request(GPIO_FN_VI0_G3, NULL);
+	gpio_request(GPIO_FN_VI0_G2, NULL);
+	gpio_request(GPIO_FN_VI0_G1, NULL);
+	gpio_request(GPIO_FN_VI0_G0, NULL);
+	gpio_request(GPIO_FN_VI0_R7, NULL);
+	gpio_request(GPIO_FN_VI0_R6, NULL);
+	gpio_request(GPIO_FN_VI0_R5, NULL);
+	gpio_request(GPIO_FN_VI0_R4, NULL);
+	gpio_request(GPIO_FN_VI0_R3, NULL);
+	gpio_request(GPIO_FN_VI0_R2, NULL);
+	gpio_request(GPIO_FN_VI0_R1, NULL);
+	gpio_request(GPIO_FN_VI0_R0, NULL);
+	gpio_request(GPIO_FN_VI0_HSYNC, NULL);
+	gpio_request(GPIO_FN_VI0_VSYNC, NULL);
+	gpio_request(GPIO_FN_VI0_FIELD, NULL);
+	gpio_request(GPIO_FN_VI0_CLKENB, NULL);
+#endif
 
 	/* VIN1 */
 	gpio_request(GPIO_FN_VI1_CLK, NULL);

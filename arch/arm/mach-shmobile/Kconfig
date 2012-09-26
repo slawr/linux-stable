@@ -139,6 +139,15 @@ config MACH_MARZEN_REE_EDC_EXP_BOARD_DU1
 	help
 	  Display Unit 1 is multiplexed with video in 2 (VIN2).
 
+config MACH_MARZEN_REE_EDC_EXP_BOARD_24BIT_VIN
+	bool "Use 24-bit input on VIN0"
+	depends on MACH_MARZEN_REE_EDC_EXP_BOARD
+	depends on !MACH_MARZEN_REE_EDC_EXP_BOARD_ETH
+	select SOC_CAMERA_RGB24BIT
+	help
+	  This uses 24-bit RGB data on VIN0 with external HSYNC & VSYNC
+	  signals.
+
 comment "SH-Mobile System Configuration"
 
 config CPU_HAS_INTEVT
