@@ -998,7 +998,7 @@ static int rcar_vin_try_bus_param(struct soc_camera_device *icd,
 	else if (ret != -ENOIOCTLCMD)
 		return ret;
 
-	if (!common_flags || buswidth > 16)
+	if (!common_flags)
 		return -EINVAL;
 
 	return 0;
