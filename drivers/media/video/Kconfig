@@ -1073,6 +1073,13 @@ config SOC_CAMERA_OV10635
 	help
 	  This is an OmniVision ov10635 camera driver
 
+config SOC_CAMERA_RGB24BIT
+	tristate "RGB 24-bit camera input support"
+	depends on SOC_CAMERA && I2C
+	help
+	  This is an dummy camera driver for 24-bit RGB input. All it does is
+	  report the colorspace and format to the SoC bridge hardware.
+
 config MX1_VIDEO
 	bool
 
