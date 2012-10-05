@@ -351,6 +351,8 @@ static void rcar_vin_setup(struct rcar_vin_dev *pcdev)
 	struct rcar_vin_cam *cam = icd->host_priv;
 	u32 mc, dmr;
 	int progressive = 0;
+	int input_is_yuv = 0;
+	int output_is_yuv = 0;
 
 	/* field */
 	switch (pcdev->field) {
@@ -395,8 +397,10 @@ static void rcar_vin_setup(struct rcar_vin_dev *pcdev)
 	case V4L2_MBUS_FMT_YUYV8_1X16:
 		/* BT.1358 16bit YCbCr-422 */
 		mc |= VIN_VNMC_INF_YUV16;
+		input_is_yuv = 1;
 		break;
 	case V4L2_MBUS_FMT_YUYV8_2X8:
+		input_is_yuv = 1;
 		/* BT.656 8bit YCbCr-422 */
 		if (pcdev->use_bt656)
 			mc |= VIN_VNMC_INF_YUV8_BT656;
@@ -412,27 +416,24 @@ static void rcar_vin_setup(struct rcar_vin_dev *pcdev)
 		vin_write(pcdev, V0UVAOF,
 			  ((cam->width * cam->height) + 0x7f) & ~0x7f);
 		dmr = VIN_VNDMR_DTMD_YCSEP;
-		mc |= VIN_VNMC_VUP | VIN_VNMC_BPS;
+		output_is_yuv = 1;
 		break;
 	case V4L2_PIX_FMT_YUYV:
 		dmr = VIN_VNDMR_BPSM;
-		mc |= VIN_VNMC_VUP | VIN_VNMC_BPS;
+		output_is_yuv = 1;
 		break;
 	case V4L2_PIX_FMT_UYVY:
 		dmr = 0;
-		mc |= VIN_VNMC_VUP | VIN_VNMC_BPS;
+		output_is_yuv = 1;
 		break;
 	case V4L2_PIX_FMT_RGB555X:
 		dmr = VIN_VNDMR_DTMD_ARGB1555;
-		mc |= VIN_VNMC_VUP;
 		break;
 	case V4L2_PIX_FMT_RGB565:
 		dmr = 0;
-		mc |= VIN_VNMC_VUP;
 		break;
 	case V4L2_PIX_FMT_RGB32:
 		dmr = VIN_VNDMR_EXRGB;
-		mc |= VIN_VNMC_VUP | VIN_VNMC_BPS;
 		break;
 	default:
 		pr_alert("%s: Invalid fourcc format (0x%x)\n", __func__,
@@ -441,6 +442,13 @@ static void rcar_vin_setup(struct rcar_vin_dev *pcdev)
 		mc = vin_read(pcdev, V0MC);
 		break;
 	}
+
+	/* Always update on field change */
+	mc |= VIN_VNMC_VUP;
+
+	/* If input and output use the same colorspace, use bypass mode */
+	if (input_is_yuv == output_is_yuv)
+		mc |= VIN_VNMC_BPS;
 
 	/* enable interrupt */
 	if (progressive)
