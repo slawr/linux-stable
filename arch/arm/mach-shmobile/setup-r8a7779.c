@@ -28,6 +28,7 @@
 #include <linux/serial_sci.h>
 #include <linux/sh_intc.h>
 #include <linux/sh_timer.h>
+#include <linux/pm_clock.h>
 #include <mach/hardware.h>
 #include <mach/irqs.h>
 #include <mach/r8a7779.h>
@@ -310,6 +311,26 @@ static struct platform_device i2c3_device = {
 	.num_resources	= ARRAY_SIZE(rcar_i2c3_res),
 };
 
+/* SGX */
+static struct resource sgx_resources[] = {
+	[0] = {
+		.name	= "SGX",
+		.start	= 0xfce00000,
+		.end	= 0xfcffffff,
+		.flags	= IORESOURCE_MEM,
+	}, {
+		.start  = gic_spi(57),
+		.flags  = IORESOURCE_IRQ,
+	},
+};
+
+static struct platform_device sgx_device = {
+	.name		= "sgx",
+	.id		= 0,
+	.resource	= sgx_resources,
+	.num_resources	= ARRAY_SIZE(sgx_resources),
+};
+
 static struct platform_device *r8a7779_early_devices[] __initdata = {
 	&scif0_device,
 	&scif1_device,
@@ -329,6 +350,7 @@ static struct platform_device *r8a7779_early_devices[] __initdata = {
 };
 
 static struct platform_device *r8a7779_late_devices[] __initdata = {
+	&sgx_device,
 };
 
 void __init r8a7779_add_standard_devices(void)
@@ -348,6 +370,9 @@ void __init r8a7779_add_standard_devices(void)
 			    ARRAY_SIZE(r8a7779_early_devices));
 	platform_add_devices(r8a7779_late_devices,
 			    ARRAY_SIZE(r8a7779_late_devices));
+
+	r8a7779_add_device_to_domain(&r8a7779_sgx, &sgx_device);
+	pm_clk_add(&sgx_device.dev, "sgx");
 }
 
 /* do nothing for !CONFIG_SMP or !CONFIG_HAVE_TWD */
