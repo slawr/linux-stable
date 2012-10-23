@@ -448,6 +448,29 @@ static int __init rcar_usbh_init(void)
 	return 0;
 }
 
+static struct resource rcar_sata_resources[] = {
+	[0] = {
+		.name	= "sata",
+		.start	= 0xfc600000,
+		.end	= 0xfc601fff,
+		.flags	= IORESOURCE_MEM,
+	},
+	[1] = {
+		.start	= gic_spi(100),
+		.flags	= IORESOURCE_IRQ,
+	},
+};
+
+static struct platform_device rcar_sata_device = {
+	.name		= "sata_rcar",
+	.id		= 0,
+	.num_resources	= ARRAY_SIZE(rcar_sata_resources),
+	.resource	= rcar_sata_resources,
+	.dev  = {
+		.coherent_dma_mask = DMA_BIT_MASK(32),
+	},
+};
+
 static struct platform_device alsa_soc_platform_device = {
 	.name		= "rcar_alsa_soc_platform",
 	.id		= 0,
@@ -642,6 +665,7 @@ static struct platform_device *marzen_devices[] __initdata = {
 	&ohci0_device,
 	&ehci1_device,
 	&ohci1_device,
+	&rcar_sata_device,
 	&alsa_soc_platform_device,
 	&sru_device,
 	&rcar_display_device,
