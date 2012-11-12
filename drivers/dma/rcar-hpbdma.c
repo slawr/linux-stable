@@ -99,16 +99,6 @@ static void dmadintcr_write(struct hpb_dmae_device *hpbdev, u32 ch)
 			 / sizeof(u32));
 }
 
-static void dmaasyncmdr_write(struct hpb_dmae_device *hpbdev, u32 data)
-{
-	__raw_writel(data, hpbdev->mode_reg);
-}
-
-static u32 dmaasyncmdr_read(struct hpb_dmae_device *hpbdev)
-{
-	return __raw_readl(hpbdev->mode_reg);
-}
-
 static void dmae_enable_int(struct hpb_dmae_device *hpbdev, u32 dmach)
 {
 	int intreg;
@@ -154,10 +144,10 @@ static void dmae_set_async_mode(struct hpb_dmae_device *hpbdev,
 	u32 mode;
 
 	spin_lock_bh(&hpbdev->reg_lock);
-	mode = dmaasyncmdr_read(hpbdev);
+	mode = __raw_readl(hpbdev->mode_reg);
 	mode &= ~mask;
 	mode |= data;
-	dmaasyncmdr_write(hpbdev, mode);
+	__raw_writel(mode, hpbdev->mode_reg);
 	spin_unlock_bh(&hpbdev->reg_lock);
 }
 
