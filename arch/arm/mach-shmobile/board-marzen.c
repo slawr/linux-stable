@@ -898,6 +898,14 @@ static void __init marzen_init(void)
 
 	r8a7779_pinmux_init();
 
+	/* SCIF0 */
+	gpio_request(GPIO_FN_TX0_B, NULL);
+	gpio_request(GPIO_FN_RX0_B, NULL);
+
+	/* SCIF1 */
+	gpio_request(GPIO_FN_TX1, NULL);
+	gpio_request(GPIO_FN_RX1, NULL);
+
 	/* SCIF2 (CN18: DEBUG0) */
 	gpio_request(GPIO_FN_TX2_C, NULL);
 	gpio_request(GPIO_FN_RX2_C, NULL);
@@ -905,6 +913,10 @@ static void __init marzen_init(void)
 	/* SCIF4 (CN19: DEBUG1) */
 	gpio_request(GPIO_FN_TX4, NULL);
 	gpio_request(GPIO_FN_RX4, NULL);
+
+	/* SCIF3 */
+	gpio_request(GPIO_FN_TX3_IRDA_TX, NULL);
+	gpio_request(GPIO_FN_RX3_IRDA_RX, NULL);
 
 	/* LAN89218 */
 	gpio_request(GPIO_FN_EX_CS0, NULL); /* nCS */
