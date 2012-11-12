@@ -388,9 +388,6 @@ static int rcar_du_setcolreg(u_int regno,
 		break;
 	case BITPARPIXEL_24:
 	case BITPARPIXEL_32:
-		if (regno >= 256)
-			return 1;
-
 		palette = info->pseudo_palette;
 		palette[regno] = ((transp & 0xff00) << 16) |
 				((red & 0xff00) << 8) |
@@ -398,7 +395,7 @@ static int rcar_du_setcolreg(u_int regno,
 				((blue & 0xff00) >> 8);
 		break;
 	default:
-		return 1;
+		return -EINVAL;
 	}
 
 	return 0;
