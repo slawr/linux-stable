@@ -165,17 +165,7 @@ static int hpb_dmae_rst(struct hpb_dmae_device *hpbdev)
 
 	return 0;
 }
-#if 0
-static bool dmae_is_busy(struct hpb_dmae_chan *hpb_chan)
-{
-	u32 dstsr = hpb_dmae_readl(hpb_chan, DSTSR);
 
-	if ((dstsr & 0x01) == 0x01)
-		return true; /* working */
-
-	return false; /* waiting */
-}
-#endif
 static unsigned int calc_xmit_shift(struct hpb_dmae_chan *hpb_chan)
 {
 	struct hpb_dmae_device *hpbdev = container_of(hpb_chan->common.device,
