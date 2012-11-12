@@ -448,7 +448,7 @@ static int hpb_dmae_alloc_chan_resources(struct dma_chan *chan)
 	struct hpb_desc *desc;
 	const struct hpb_dmae_channel *chan_pdata;
 	struct hpb_dmae_pdata *pdata;
-	int ret, i, err;
+	int ret, i;
 
 	hpbdev = g_hpbdev;
 	param = chan->private;
@@ -507,19 +507,20 @@ static int hpb_dmae_alloc_chan_resources(struct dma_chan *chan)
 		}
 
 		/* set up channel irq */
-		err = request_irq(hpb_chan->irq,
+		ret = request_irq(hpb_chan->irq,
 				&hpb_dmae_interrupt, IRQF_DISABLED,
 				hpb_chan->dev_id, hpb_chan);
-		if (err) {
+		if (ret) {
 			dev_err(hpbdev->common.dev,
 				"DMA channel request_irq error "
-				"with return %d\n", err);
+				"with return %d\n", ret);
 			goto err_no_irq;
 		}
 
 		if ((cfg->dcr & (CT | DIP)) == CT ||
 		    (cfg->dcr & (CT | DIP)) == DIP) {
 			dev_err(hpbdev->common.dev, "DCR setting error");
+			ret = -EIO;
 			goto err_no_irq;
 		} else if ((cfg->dcr & (CT | DIP)) == (CT | DIP))
 			hpb_chan->tran_mode = TRAN_DOUBLE;
@@ -569,14 +570,9 @@ edescalloc:
 		clear_bit(param->slave_id, hpb_dmae_slave_used);
 etestused:
 efindslave:
+err_no_irq:
 	pm_runtime_put(hpb_chan->dev);
 	return ret;
-
-err_no_irq:
-	/* remove from dmaengine device node */
-	list_del(&hpb_chan->common.device_node);
-	kfree(hpb_chan);
-	return err;
 }
 
 
