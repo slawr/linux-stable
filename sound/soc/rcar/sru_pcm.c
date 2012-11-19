@@ -380,7 +380,7 @@ static int sru_audio_stop(struct snd_pcm_substream *substream)
 	/* stop dma */
 	pcminfo->de_start = 0;
 
-	/* src, ssi disable *//* wait for the last DMA transfer */
+	/* src, ssi disable */
 	sru_ssi_stop(substream);
 
 	FNC_EXIT
