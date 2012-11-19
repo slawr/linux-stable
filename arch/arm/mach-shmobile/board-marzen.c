@@ -722,6 +722,20 @@ static void __init marzen_init(void)
 	gpio_request(GPIO_FN_SD0_CD, NULL);
 	gpio_request(GPIO_FN_SD0_WP, NULL);
 
+	/* SD control registers IOCTRLn: SD pins driving ability */
+	{
+		void __iomem *base = ioremap_nocache(0xfffc0000, 0x100);
+		iowrite32(~0x9aaa9aaa, base);		/* PMMR */
+		iowrite32(0x9aaa9aaa, base + 0x60);	/* IOCTRL0 */
+		iowrite32(~0x80009aaa, base);		/* PMMR */
+		iowrite32(0x80009aaa, base + 0x64);	/* IOCTRL1 */
+		iowrite32(~0x80009aaa, base);		/* PMMR */
+		iowrite32(0x80009aaa, base + 0x68);	/* IOCTRL2 */
+		iowrite32(~0x000001aa, base);		/* PMMR */
+		iowrite32(0x000001aa, base + 0x6c);	/* IOCTRL3 */
+		iounmap(base);
+	}
+
 	/* HSPI 0 */
 	gpio_request(GPIO_FN_HSPI_CLK0,	NULL);
 	gpio_request(GPIO_FN_HSPI_CS0,	NULL);
