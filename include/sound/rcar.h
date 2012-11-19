@@ -55,18 +55,17 @@ struct rcar_codec_ctrl {
 #define rcar_codec_ctrl_t	struct rcar_codec_ctrl
 
 struct rcar_pcm_ctrl {
-	rcar_ssi_ctrl_t		ssi0;		/* not use */
-	rcar_ssi_ctrl_t		ssi1;		/* not use */
+	rcar_ssi_ctrl_t		ssi0;
+	rcar_ssi_ctrl_t		ssi1;
 	rcar_ssi_ctrl_t		ssi2;		/* not use */
-	rcar_ssi_ctrl_t		ssi3;
-	rcar_ssi_ctrl_t		ssi4;
-	rcar_ssi_ctrl_t		ssi5;
-	rcar_ssi_ctrl_t		ssi6;
-	rcar_ssi_ctrl_t		ssi7;
-	rcar_ssi_ctrl_t		ssi8;
+	rcar_ssi_ctrl_t		ssi3;		/* not use */
+	rcar_ssi_ctrl_t		ssi4;		/* not use */
+	rcar_ssi_ctrl_t		ssi5;		/* not use */
+	rcar_ssi_ctrl_t		ssi6;		/* not use */
+	rcar_ssi_ctrl_t		ssi7;		/* not use */
+	rcar_ssi_ctrl_t		ssi8;		/* not use */
+	rcar_ssi_ctrl_t		ssi9;		/* not use */
 	rcar_codec_ctrl_t	codec1;		/* AK4643 */
-	rcar_codec_ctrl_t	codec2;		/* AK4554 */
-	rcar_codec_ctrl_t	codec3;		/* AK4554 */
 };
 #define rcar_pcm_ctrl_t	struct rcar_pcm_ctrl
 
