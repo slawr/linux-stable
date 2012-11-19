@@ -98,6 +98,23 @@ config MACH_MARZEN
 	depends on ARCH_R8A7779
 	select ARCH_REQUIRE_GPIOLIB
 
+choice
+	prompt "USB-PHY workaround"
+	depends on MACH_MARZEN
+	default USB_PHY_MARZEN_010S
+
+	config USB_PHY_MARZEN_010S
+	       bool "for Marzen R0P7779A00010S"
+	       help
+	         Use USB-PHY workaround Marzen board R0P7779A00010S.
+
+	config USB_PHY_MARZEN_110S
+	       bool "for Marzen R0P7779A00110S"
+	       help
+	         Use USB-PHY workaround Marzen board R0P7779A00110S.
+
+endchoice
+
 comment "SH-Mobile System Configuration"
 
 config CPU_HAS_INTEVT
