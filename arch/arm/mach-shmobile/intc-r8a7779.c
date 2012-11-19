@@ -112,7 +112,7 @@ static struct intc2_child dmach25_27_child[] = {
 	{ (1<<26), IRQ_DMAC_H(26) },
 	{ (1<<27), IRQ_DMAC_H(27) },
 };
-static struct intc2_child dmach28_36_child[] = {
+static struct intc2_child dmach28_36_42_child[] = {
 	{ (1<<0), IRQ_DMAC_H(28) },
 	{ (1<<1), IRQ_DMAC_H(29) },
 	{ (1<<2), IRQ_DMAC_H(30) },
@@ -122,16 +122,16 @@ static struct intc2_child dmach28_36_child[] = {
 	{ (1<<6), IRQ_DMAC_H(34) },
 	{ (1<<7), IRQ_DMAC_H(35) },
 	{ (1<<8), IRQ_DMAC_H(36) },
+	{ (1<<11), IRQ_DMAC_H(42) },
 };
 static struct intc2_child dmach39_41_child[] = {
 	{ (1<<28), IRQ_DMAC_H(39) },
 	{ (1<<29), IRQ_DMAC_H(40) },
 	{ (1<<30), IRQ_DMAC_H(41) },
 };
-static struct intc2_child dmach37_38_42_child[] = {
+static struct intc2_child dmach37_38_child[] = {
 	{ (1<<9), IRQ_DMAC_H(37) },
 	{ (1<<10), IRQ_DMAC_H(38) },
-	{ (1<<11), IRQ_DMAC_H(42) },
 };
 static struct intc2_child dmach43_child[] = {
 	{ (1<<12), IRQ_DMAC_H(43) },
@@ -204,8 +204,8 @@ static struct intc2_parent intc2_parent_desc[] = {
 	{
 		gic_spi(118),
 		IOMEM(0xfe7820f0),
-		ARRAY_SIZE(dmach28_36_child),
-		dmach28_36_child
+		ARRAY_SIZE(dmach28_36_42_child),
+		dmach28_36_42_child
 	},
 	{
 		gic_spi(119),
@@ -216,8 +216,8 @@ static struct intc2_parent intc2_parent_desc[] = {
 	{
 		gic_spi(120),
 		IOMEM(0xfe7820f0),
-		ARRAY_SIZE(dmach37_38_42_child),
-		dmach37_38_42_child
+		ARRAY_SIZE(dmach37_38_child),
+		dmach37_38_child
 	},
 	{
 		gic_spi(121),
