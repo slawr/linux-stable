@@ -534,8 +534,10 @@ static int sru_pcm_open(struct snd_pcm_substream *substream)
 	if (pcminfo->de_chan == NULL) {
 		pcminfo->de_chan =
 		    dma_request_channel(mask, sru_dmae_filter, param);
-		if (!pcminfo->de_chan)
+		if (!pcminfo->de_chan) {
 			printk(KERN_ERR "DMA channel request error\n");
+			ret = -EBUSY;
+		}
 	}
 	FNC_EXIT
 	return ret;
