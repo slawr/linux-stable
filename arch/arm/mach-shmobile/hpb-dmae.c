@@ -74,23 +74,9 @@ static const struct hpb_dmae_slave_config rcar_dmae_slaves[] = {
 		.flags	= 0,
 		.dma_ch	= 28,
 	}, {
-		.id	= HPBDMA_SLAVE_SSI0_TX_MN,
-		.addr	= 0xffd90000 + 0x1008,
-		.dcr	= CT | DIP | SPDS_16BIT | DMDL | DPDS_16BIT,
-		.port	= 0x0000,
-		.flags	= 0,
-		.dma_ch	= 28,
-	}, {
 		.id	= HPBDMA_SLAVE_SSI1_RX_ST,
 		.addr	= 0xffd90000 + 0x104c,
 		.dcr	= CT | DIP | SMDL | SPDS_32BIT | DPDAM | DPDS_32BIT,
-		.port	= 0x0101,
-		.flags	= 0,
-		.dma_ch	= 29,
-	}, {
-		.id	= HPBDMA_SLAVE_SSI1_RX_MN,
-		.addr	= 0xffd90000 + 0x104c,
-		.dcr	= CT | DIP | SMDL | SPDS_16BIT | DPDAM | DPDS_16BIT,
 		.port	= 0x0101,
 		.flags	= 0,
 		.dma_ch	= 29,
