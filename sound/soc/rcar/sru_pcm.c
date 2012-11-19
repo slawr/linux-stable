@@ -815,6 +815,9 @@ static int sru_remove(struct platform_device *pdev)
 {
 	FNC_ENTRY
 
+	snd_soc_unregister_dais(&pdev->dev, ARRAY_SIZE(sru_soc_dai));
+	snd_soc_unregister_platform(&pdev->dev);
+
 	clk_disable(ssi0_clk);
 	clk_disable(ssi1_clk);
 	clk_disable(sru_clk);
