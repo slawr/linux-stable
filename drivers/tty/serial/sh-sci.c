@@ -950,6 +950,7 @@ static irqreturn_t sci_mpxed_interrupt(int irq, void *ptr)
 	unsigned short ssr_status, scr_status, err_enabled;
 	struct uart_port *port = ptr;
 	struct sci_port *s = to_sci_port(port);
+	struct plat_sci_reg *reg;
 	irqreturn_t ret = IRQ_NONE;
 
 	ssr_status = serial_port_in(port, SCxSR);
@@ -972,6 +973,12 @@ static irqreturn_t sci_mpxed_interrupt(int irq, void *ptr)
 	/* Error Interrupt */
 	if ((ssr_status & SCxSR_ERRORS(port)) && err_enabled)
 		ret = sci_er_interrupt(irq, ptr);
+
+	/* Overrun */
+	reg = sci_getreg(port, SCLSR);
+	if (reg->size)
+		if ((serial_port_in(port, SCLSR) & (1 << s->cfg->overrun_bit)))
+			ret = sci_er_interrupt(irq, ptr);
 
 	/* Break Interrupt */
 	if ((ssr_status & SCxSR_BRK(port)) && err_enabled)
