@@ -393,6 +393,15 @@ static int __init rcar_usbh_start(void)
 	iowrite32((USBPCTRL1_PLLENB | USBPCTRL1_PHYENB),
 		(usb_base + USBPCTRL1));
 
+	/* work around of USB-PHY */
+#ifdef CONFIG_USB_PHY_MARZEN_010S
+	iowrite32(0x10700040, (usb_base + 0x0850));
+	iowrite32(0x00007700, (usb_base + 0x085C));
+#elif defined CONFIG_USB_PHY_MARZEN_110S
+	iowrite32(0x10B00040, (usb_base + 0x0850));
+	iowrite32(0x00007700, (usb_base + 0x085C));
+#endif
+
 	/* check status */
 	timeout = 100; /* about 100ms */
 	do {
