@@ -747,6 +747,9 @@ static void __init marzen_init(void)
 	gpio_request(GPIO_FN_USB_OVC1, NULL);
 	gpio_request(GPIO_FN_USB_OVC2, NULL);
 
+	/* USB (CN22) */
+	gpio_request(GPIO_FN_USB_PENC2, NULL);
+
 	/* Display Unit 0 (CN10: ARGB0) */
 	gpio_request(GPIO_FN_DU0_DR7, NULL);
 	gpio_request(GPIO_FN_DU0_DR6, NULL);
