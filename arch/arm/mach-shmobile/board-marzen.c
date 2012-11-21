@@ -155,6 +155,21 @@ static struct platform_device hspi_device = {
 	.num_resources	= ARRAY_SIZE(hspi_resources),
 };
 
+static struct resource hspi2_resources[] = {
+	[0] = {
+		.start		= 0xFFFC6000,
+		.end		= 0xFFFC6018 - 1,
+		.flags		= IORESOURCE_MEM,
+	},
+};
+
+static struct platform_device hspi2_device = {
+	.name	= "sh-hspi",
+	.id	= 2,
+	.resource	= hspi2_resources,
+	.num_resources	= ARRAY_SIZE(hspi2_resources),
+};
+
 static struct resource rcar_du0_resources[] = {
 	[0] = {
 		.name	= "Display Unit 0",
@@ -670,6 +685,7 @@ static struct platform_device *marzen_devices[] __initdata = {
 	&sdhi0_device,
 	&thermal_device,
 	&hspi_device,
+	&hspi2_device,
 	&ehci0_device,
 	&ohci0_device,
 	&ehci1_device,
@@ -741,6 +757,12 @@ static void __init marzen_init(void)
 	gpio_request(GPIO_FN_HSPI_CS0,	NULL);
 	gpio_request(GPIO_FN_HSPI_TX0,	NULL);
 	gpio_request(GPIO_FN_HSPI_RX0,	NULL);
+
+	/* HSPI 2 B (SPI Flash) */
+	gpio_request(GPIO_FN_HSPI_CLK2_B, NULL);
+	gpio_request(GPIO_FN_HSPI_CS2_B, NULL);
+	gpio_request(GPIO_FN_HSPI_TX2_B, NULL);
+	gpio_request(GPIO_FN_HSPI_RX2_B, NULL);
 
 	/* USB (CN21) */
 	gpio_request(GPIO_FN_USB_OVC0, NULL);
