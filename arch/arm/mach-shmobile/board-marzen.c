@@ -170,6 +170,21 @@ static struct platform_device hspi2_device = {
 	.num_resources	= ARRAY_SIZE(hspi2_resources),
 };
 
+static struct spi_board_info marzen_spi_devices[] __initdata = {
+	{
+		.modalias = "spidev",
+		.max_speed_hz = 100000000,
+		.bus_num = 0,
+		.chip_select = 0,
+	},
+	{
+		.modalias = "spidev",
+		.max_speed_hz = 100000000,
+		.bus_num = 2,
+		.chip_select = 0,
+	},
+};
+
 static struct resource rcar_du0_resources[] = {
 	[0] = {
 		.name	= "Display Unit 0",
@@ -843,6 +858,9 @@ static void __init marzen_init(void)
 
 	i2c_register_board_info(0, marzen_i2c_devices,
 				ARRAY_SIZE(marzen_i2c_devices));
+
+	spi_register_board_info(marzen_spi_devices,
+		ARRAY_SIZE(marzen_spi_devices));
 
 	rcar_usbh_init();
 }
