@@ -83,13 +83,13 @@ static void hspi_bit_set(struct hspi_priv *hspi, int reg, u32 mask, u32 set)
  */
 static int hspi_status_check_timeout(struct hspi_priv *hspi, u32 mask, u32 val)
 {
-	int t = 256;
+	int t = 10000; /* 10ms max timeout */
 
 	while (t--) {
 		if ((mask & hspi_read(hspi, SPSR)) == val)
 			return 0;
 
-		msleep(20);
+		udelay(1);
 	}
 
 	dev_err(hspi->dev, "timeout\n");
