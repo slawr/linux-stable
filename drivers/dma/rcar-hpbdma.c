@@ -235,11 +235,9 @@ static void dmae_set_port(struct hpb_dmae_chan *hpb_chan, u32 portreg)
 	hpb_chan->xmit_shift = calc_xmit_shift(hpb_chan);
 }
 
-static int dmae_set_dcr(struct hpb_dmae_chan *hpb_chan, u32 val)
+static void dmae_set_dcr(struct hpb_dmae_chan *hpb_chan, u32 val)
 {
 	hpb_dmae_writel(hpb_chan, val, DCR);
-
-	return 0;
 }
 
 static dma_cookie_t hpb_dmae_tx_submit(struct dma_async_tx_descriptor *tx)
