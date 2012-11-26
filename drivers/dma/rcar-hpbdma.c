@@ -151,6 +151,40 @@ static void dmae_set_async_mode(struct hpb_dmae_device *hpbdev,
 	spin_unlock_bh(&hpbdev->reg_lock);
 }
 
+static void dmae_select_shpt(struct hpb_dmae_device *hpbdev, u32 dmach,
+	u32 flags)
+{
+	u32 reg;
+
+	spin_lock_bh(&hpbdev->reg_lock);
+	if (flags & HPB_DMAE_SET_SHPT1) { /* select SuperHywayPort1 */
+		if (dmach < 32) {
+			reg = __raw_readl(hpbdev->comm_reg +
+					HPB_DMSHPT0 / sizeof(u32));
+			__raw_writel(((0x01 << dmach) | reg),
+				hpbdev->comm_reg + HPB_DMSHPT0 / sizeof(u32));
+		} else {
+			reg = __raw_readl(hpbdev->comm_reg +
+					HPB_DMSHPT1 / sizeof(u32));
+			__raw_writel(((0x01 << (dmach-32)) | reg),
+				hpbdev->comm_reg + HPB_DMSHPT1 / sizeof(u32));
+		}
+	} else { /* select SuperHywayPort0 */
+		if (dmach < 32) {
+			reg = __raw_readl(hpbdev->comm_reg +
+					HPB_DMSHPT0 / sizeof(u32));
+			__raw_writel((~(0x01 << dmach) & reg),
+				hpbdev->comm_reg + HPB_DMSHPT0 / sizeof(u32));
+		} else {
+			reg = __raw_readl(hpbdev->comm_reg +
+					HPB_DMSHPT1 / sizeof(u32));
+			__raw_writel((~(0x01 << (dmach-32)) & reg),
+				hpbdev->comm_reg + HPB_DMSHPT1 / sizeof(u32));
+		}
+	}
+	spin_unlock_bh(&hpbdev->reg_lock);
+}
+
 static void hpb_dmae_ctl_stop(struct hpb_dmae_device *hpbdev)
 {
 	dmadcmdr_write(hpbdev, DQSPD);
@@ -508,6 +542,7 @@ static int hpb_dmae_alloc_chan_resources(struct dma_chan *chan)
 		if (cfg->flags & HPB_DMAE_SET_ASYNC_MODE)
 			dmae_set_async_mode(hpbdev, MD_MASK(cfg->dma_ch),
 						cfg->mdr);
+		dmae_select_shpt(hpbdev, cfg->dma_ch, cfg->flags);
 		dmae_set_dcr(hpb_chan, cfg->dcr);
 		dmae_set_port(hpb_chan, cfg->port);
 		dmae_enable_int(hpbdev, cfg->dma_ch);

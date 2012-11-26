@@ -236,6 +236,7 @@ struct hpb_dmae_slave_config {
 	u32		flags;
 #define	HPB_DMAE_SET_ASYNC_RESET	(1<<0)
 #define	HPB_DMAE_SET_ASYNC_MODE		(1<<1)
+#define	HPB_DMAE_SET_SHPT1		(1<<2)
 	u32		dma_ch;
 };
 
