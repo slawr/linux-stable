@@ -63,7 +63,8 @@ static const struct hpb_dmae_slave_config rcar_dmae_slaves[] = {
 		.rstr	= ASRST21 | ASRST22 | ASRST23,
 		.mdr	= ASMD22_SINGLE | ASBTMD22_NBURST,
 		.port	= 0x0D0C,
-		.flags	= HPB_DMAE_SET_ASYNC_RESET | HPB_DMAE_SET_ASYNC_MODE,
+		.flags	= HPB_DMAE_SET_ASYNC_RESET | HPB_DMAE_SET_ASYNC_MODE |
+				HPB_DMAE_SET_SHPT1,
 		.dma_ch	= 22,
 	}, {
 		.id	= HPBDMA_SLAVE_SSI0_TX_ST,
