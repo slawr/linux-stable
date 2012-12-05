@@ -2255,7 +2255,7 @@ void ata_sff_std_ports(struct ata_ioports *ioaddr)
 }
 EXPORT_SYMBOL_GPL(ata_sff_std_ports);
 
-#ifdef CONFIG_PCI
+#if defined(CONFIG_PCI) && defined(CONFIG_HAS_IOPORT)
 
 static int ata_resources_present(struct pci_dev *pdev, int port)
 {
@@ -3152,7 +3152,7 @@ int ata_bmdma_port_start32(struct ata_port *ap)
 }
 EXPORT_SYMBOL_GPL(ata_bmdma_port_start32);
 
-#ifdef CONFIG_PCI
+#if defined(CONFIG_PCI) && defined(CONFIG_HAS_IOPORT)
 
 /**
  *	ata_pci_bmdma_clear_simplex -	attempt to kick device out of simplex
