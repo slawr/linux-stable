@@ -39,6 +39,7 @@
 #include <asm/mach/time.h>
 #include <asm/mach/map.h>
 #include <asm/hardware/cache-l2x0.h>
+#include <asm/pmu.h>
 
 static struct map_desc r8a7779_io_desc[] __initdata = {
 	/* 2M entity map for 0xf0000000 (MPCORE) */
@@ -311,6 +312,36 @@ static struct platform_device i2c3_device = {
 	.num_resources	= ARRAY_SIZE(rcar_i2c3_res),
 };
 
+static struct resource pmu_resources[] = {
+	[0] = {
+		.start	= gic_spi(59),
+		.end	= gic_spi(59),
+		.flags  = IORESOURCE_IRQ,
+	},
+	[1] = {
+		.start	= gic_spi(60),
+		.end	= gic_spi(60),
+		.flags  = IORESOURCE_IRQ,
+	},
+	[2] = {
+		.start	= gic_spi(61),
+		.end	= gic_spi(61),
+		.flags  = IORESOURCE_IRQ,
+	},
+	[3] = {
+		.start	= gic_spi(62),
+		.end	= gic_spi(62),
+		.flags  = IORESOURCE_IRQ,
+	},
+};
+
+static struct platform_device pmu_device = {
+	.name		= "arm-pmu",
+	.id		= ARM_PMU_DEVICE_CPU,
+	.num_resources = ARRAY_SIZE(pmu_resources),
+	.resource = pmu_resources,
+};
+
 /* SGX */
 static struct resource sgx_resources[] = {
 	[0] = {
@@ -350,6 +381,7 @@ static struct platform_device *r8a7779_early_devices[] __initdata = {
 };
 
 static struct platform_device *r8a7779_late_devices[] __initdata = {
+	&pmu_device,
 	&sgx_device,
 };
 
