@@ -964,7 +964,33 @@ static struct platform_driver rcar_du_driver = {
 	.remove		= rcar_du_remove,
 };
 
-module_platform_driver(rcar_du_driver);
+static int __init rcar_du_init(void)
+{
+	char *option;
+	char *this_opt;
+
+	if (fb_get_options("rcarfb0", &option))
+		return -ENODEV;
+
+	while ((this_opt = strsep(&option, ",")) != NULL)
+		mode_option[0] = this_opt;
+
+	if (fb_get_options("rcarfb1", &option))
+		return -ENODEV;
+
+	while ((this_opt = strsep(&option, ",")) != NULL)
+		mode_option[1] = this_opt;
+
+	return platform_driver_register(&rcar_du_driver);
+}
+
+static void __exit rcar_du_exit(void)
+{
+	platform_driver_unregister(&rcar_du_driver);
+}
+
+module_init(rcar_du_init);
+module_exit(rcar_du_exit);
 
 MODULE_DESCRIPTION("R-Car Display Unit Framebuffer driver");
 MODULE_LICENSE("GPL v2");
