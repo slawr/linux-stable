@@ -267,6 +267,24 @@ static int dma_mmu_remap_num __initdata;
 
 void __init dma_contiguous_early_fixup(phys_addr_t base, unsigned long size)
 {
+#ifdef CONFIG_ARCH_R8A7779
+#define DDR_BOUNDARY 0x80000000UL
+	/*
+	 * The SGX hardware on the R-Car H1 device cannot access two banks of
+	 * DDR. Since all the memory used by the SGX is allocated by CMA, we
+	 * are checking here that the CMA region is entirely in one DDR bank.
+	 * It's not very nice to have it here, but it seems the sensible thing.
+	 */
+	if ((base < DDR_BOUNDARY) && (base+size > DDR_BOUNDARY)) {
+		pr_warn("\nr8a7779: (R-Car H1)\n"
+			"The memory used by the SGX hardware potentially "
+			"crosses the DDR boundary\nThis memory is allocated "
+			"by CMA, so either change the size of CMA, or adjust\n"
+			"the base address or size of memory available to the "
+			"kernel\n\n");
+	}
+#endif
+
 	dma_mmu_remap[dma_mmu_remap_num].base = base;
 	dma_mmu_remap[dma_mmu_remap_num].size = size;
 	dma_mmu_remap_num++;
