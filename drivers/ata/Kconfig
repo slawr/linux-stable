@@ -299,14 +299,6 @@ config SATA_RCAR
 
 	  If unsure, say N.
 
-config SATA_RCAR
-	tristate "R-Car SATA support"
-	help
-	  This option enables support for the Renesas R-Car series
-	  Serial ATA controller.
-
-	  If unsure, say N.
-
 comment "PATA SFF controllers with BMDMA"
 
 config PATA_ALI
