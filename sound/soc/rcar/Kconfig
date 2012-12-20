@@ -1,16 +1,17 @@
 menu "SoC Audio support for R-Car"
-	depends on ARCH_RCAR || MACH_MARZEN
+	depends on ARCH_RCAR || MACH_MARZEN || MACH_HURRICANE
 
 ##
 ## Audio unit modules
 ##
 
 config SND_SOC_RCAR
-	tristate "R-Car Marzen sound support"
+	tristate "R-Car H1 sound support"
 	select SND_HWDEP
-	select SND_RCAR_AK4643
+	select SND_RCAR_AK4643 if MACH_MARZEN
+	select SND_RCAR_AK4648 if MACH_HURRICANE
 	help
-	  This option enables R-Car Marzen platform sound support
+	  This option enables R-Car Marzen and Hurricane platform sound support
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called snd_soc_rcar.
@@ -30,6 +31,20 @@ config SND_RCAR_AK4643
 config SND_SOC_AK4643_RCAR
 	bool
 	depends on SND_RCAR_AK4643
+	default y
+
+
+config SND_RCAR_AK4648
+	tristate "R-Car AK4648 sound support"
+	depends on SND_SOC_RCAR
+	select SND_SOC_AK4642
+	help
+	  This option enables the sound support for
+	  AK4648 unit of R-Car platform.
+
+config SND_SOC_AK4648_RCAR
+	bool
+	depends on SND_RCAR_AK4648
 	default y
 
 endmenu
