@@ -40,7 +40,6 @@
 
 ************************************************************************/
 static struct snd_soc_card rcar_codec1_soc_card;
-int sru_pcm_hwdep_new(struct snd_card *card, char *id);
 
 static int rcar_codec1_dai_init(struct snd_soc_pcm_runtime *rtd)
 {
@@ -62,10 +61,6 @@ static int rcar_codec1_dai_init(struct snd_soc_pcm_runtime *rtd)
 		pr_err("snd_soc_dai_set_fmt err=%d\n", ret);
 		return ret;
 	}
-
-	ret = sru_pcm_hwdep_new(rtd->card->snd_card, "sru_pcm0");
-	if (ret)
-		pr_err("sru_pcm_hwdep_new err=%d\n", ret);
 
 	FNC_EXIT
 	return ret;

@@ -508,12 +508,4 @@ struct rcar_audio_info {
 	struct hpbdma_pregs *dmareg[2];	/* [0]:playback [1]:capture */
 };
 
-/************************************************************************
-	external prototype declaration
-************************************************************************/
-extern struct snd_soc_dai_driver sru_soc_dai[];
-
-extern int sru_pcm_hwdep_new(struct snd_card *card, char *id);
-extern void rcar_audio_init(int codec_id);
-
 #endif	/* __SRU_PCM_H__ */

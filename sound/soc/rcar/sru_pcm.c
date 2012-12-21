@@ -51,91 +51,6 @@ static void __iomem *adg_io;
 
 static u64 dma_mask = DMA_BIT_MASK(32);
 
-static struct rcar_pcm_ctrl rcar_pcm_hwdep = {
-	.ssi0.m_s = SSI_MODE_MASTER,
-	.ssi1.m_s = SSI_MODE_SLAVE,
-	.ssi2.m_s = 0,
-	.ssi3.m_s = 0,
-	.ssi4.m_s = 0,
-	.ssi5.m_s = 0,
-	.ssi6.m_s = 0,
-	.ssi7.m_s = 0,
-	.ssi8.m_s = 0,
-	.ssi9.m_s = 0,
-	.codec1.m_s = CODEC_MODE_SLAVE,
-};
-
-/************************************************************************
-
-	callback functions for snd_hwdep_ops structure
-
-************************************************************************/
-static int sru_pcm_hwdep_open(struct snd_hwdep *hw, struct file *file)
-{
-	return 0;
-}
-
-static int sru_pcm_hwdep_release(struct snd_hwdep *hw, struct file *file)
-{
-	return 0;
-}
-
-static int sru_pcm_hwdep_ioctl(struct snd_hwdep *hw, struct file *file,
-			       unsigned int cmd, unsigned long arg)
-{
-	struct rcar_pcm_ctrl *info = hw->private_data;
-	struct rcar_pcm_ctrl pset;
-	int ret = 0;
-
-	FNC_ENTRY
-	switch (cmd) {
-	case SNDRV_RCAR_IOCTL_SET_PCM:
-		ret = copy_from_user(&pset, (struct rcar_pcm_ctrl *)arg,
-				     sizeof(pset));
-		if (ret != 0)
-			return -EFAULT;
-
-		/* If you want to set to Hardware Dependant Interface,
-		please implement here. (SSI & CODEC) */
-
-		break;
-	case SNDRV_RCAR_IOCTL_GET_PCM:
-		pset = *info;
-		ret = copy_to_user((void *)arg, &pset, sizeof(pset));
-		if (ret != 0)
-			return -EFAULT;
-		break;
-	default:
-		pr_warn("not supported cmd=0x%08x\n", cmd);
-		ret = -EINVAL;
-		break;
-	}
-
-	FNC_EXIT
-	return ret;
-}
-
-int sru_pcm_hwdep_new(struct snd_card *card, char *id)
-{
-	struct snd_hwdep *hw;
-	int ret = 0;
-
-	FNC_ENTRY
-	/* Add the new hwdep instance *//* 3rd argument is always 0 */
-	ret = snd_hwdep_new(card, id, 0, &hw);
-	if (ret < 0)
-		return ret;
-
-	hw->private_data = &rcar_pcm_hwdep;
-	hw->ops.open     = sru_pcm_hwdep_open;
-	hw->ops.ioctl    = sru_pcm_hwdep_ioctl;
-	hw->ops.release  = sru_pcm_hwdep_release;
-
-	FNC_EXIT
-	return ret;
-}
-EXPORT_SYMBOL(sru_pcm_hwdep_new);
-
 /************************************************************************
 
 	basic function
@@ -703,7 +618,6 @@ struct snd_soc_dai_driver sru_soc_dai[] = {
 		.ops = &sru_dai_ops,
 	},
 };
-EXPORT_SYMBOL_GPL(sru_soc_dai);
 
 static struct snd_soc_platform_driver sru_soc_platform = {
 	.pcm_new	= sru_pcm_new,

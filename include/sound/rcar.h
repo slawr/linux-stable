@@ -20,56 +20,8 @@
 #ifndef __SOUND_RCAR_H__
 #define __SOUND_RCAR_H__
 
-/************************************************************************
-
-	define
-
-************************************************************************/
 /* direction */
 #define	PLAY			0
 #define	CAPT			1
-
-/* mode */
-#define SSI_MODE_MASTER		0	/* master mode	*/
-#define SSI_MODE_SLAVE		1	/* slave mode	*/
-#define CODEC_MODE_MASTER	0	/* master mode	*/
-#define CODEC_MODE_SLAVE	1	/* slave mode	*/
-
-/* channel */
-#define	STEREO			2
-#define	MONO			1
-
-/************************************************************************
-
-	structure
-
-************************************************************************/
-struct rcar_ssi_ctrl {
-	unsigned char	m_s;	/* master/slave */
-};
-#define rcar_ssi_ctrl_t		struct rcar_ssi_ctrl
-
-struct rcar_codec_ctrl {
-	unsigned char	m_s;	/* master/slave */
-};
-#define rcar_codec_ctrl_t	struct rcar_codec_ctrl
-
-struct rcar_pcm_ctrl {
-	rcar_ssi_ctrl_t		ssi0;
-	rcar_ssi_ctrl_t		ssi1;
-	rcar_ssi_ctrl_t		ssi2;		/* not use */
-	rcar_ssi_ctrl_t		ssi3;		/* not use */
-	rcar_ssi_ctrl_t		ssi4;		/* not use */
-	rcar_ssi_ctrl_t		ssi5;		/* not use */
-	rcar_ssi_ctrl_t		ssi6;		/* not use */
-	rcar_ssi_ctrl_t		ssi7;		/* not use */
-	rcar_ssi_ctrl_t		ssi8;		/* not use */
-	rcar_ssi_ctrl_t		ssi9;		/* not use */
-	rcar_codec_ctrl_t	codec1;		/* AK4643 */
-};
-#define rcar_pcm_ctrl_t	struct rcar_pcm_ctrl
-
-#define SNDRV_RCAR_IOCTL_SET_PCM _IOW('H', 0x00, struct rcar_pcm_ctrl)
-#define SNDRV_RCAR_IOCTL_GET_PCM _IOR('H', 0x01, struct rcar_pcm_ctrl)
 
 #endif	/* __SOUND_RCAR_H__ */
