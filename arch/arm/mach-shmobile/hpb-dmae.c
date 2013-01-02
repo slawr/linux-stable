@@ -46,6 +46,10 @@ enum {
 	[XMIT_SZ_32BIT]		= 2,	\
 }
 
+#define SSI_CHAN_OFFSET	0x40
+#define SSI_TX_OFFSET	0x8
+#define SSI_RX_OFFSET	0xC
+
 static const struct hpb_dmae_slave_config rcar_dmae_slaves[] = {
 	{
 		.id	= HPBDMA_SLAVE_SDHI0_TX,
@@ -83,14 +87,14 @@ static const struct hpb_dmae_slave_config rcar_dmae_slaves[] = {
 		.dma_ch	= 24,
 	}, {
 		.id	= HPBDMA_SLAVE_SSI0_TX_ST,
-		.addr	= 0xffd90000 + 0x1008,
+		.addr	= 0xffd91000 + (0*SSI_CHAN_OFFSET) + SSI_TX_OFFSET,
 		.dcr	= CT | DIP | SPDS_32BIT | DMDL | DPDS_32BIT,
 		.port	= 0x0000,
 		.flags	= 0,
 		.dma_ch	= 28,
 	}, {
 		.id	= HPBDMA_SLAVE_SSI1_RX_ST,
-		.addr	= 0xffd90000 + 0x104c,
+		.addr	= 0xffd91000 + (1*SSI_CHAN_OFFSET) + SSI_RX_OFFSET,
 		.dcr	= CT | DIP | SMDL | SPDS_32BIT | DPDAM | DPDS_32BIT,
 		.port	= 0x0101,
 		.flags	= 0,
