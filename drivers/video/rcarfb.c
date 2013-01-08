@@ -34,7 +34,7 @@
 
 #define PALETTE_NR	256
 #define DEV_NAME	"rcarfb"
-#define PLANE_NUM	2
+#define PLANE_NUM	3
 
 static char __devinitdata *mode_option[2] = { "640x480-16", "640x480-16" };
 
@@ -862,7 +862,7 @@ static int __devinit rcar_du_probe(struct platform_device *pdev)
 	fb_var_to_videomode(&priv->current_mode, &info->var);
 
 	info->var.xres_virtual = info->var.xres;
-	info->var.yres_virtual = info->var.yres * 2; /* for double buffer */
+	info->var.yres_virtual = info->var.yres * PLANE_NUM;
 
 	error = rcar_du_check_var(&info->var, info);
 	if (error)
