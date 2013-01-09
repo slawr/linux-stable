@@ -86,7 +86,7 @@ static struct clk div4_clks[DIV4_NR] = {
 				      0x0300, CLK_ENABLE_ON_INIT),
 };
 
-enum { MSTP323, MSTP322, MSTP321, MSTP320,
+enum { MSTP331, MSTP330, MSTP323, MSTP322, MSTP321, MSTP320,
 	MSTP120, MSTP115, MSTP114, MSTP110, MSTP109,
 	MSTP108, MSTP105, MSTP103, MSTP101, MSTP100,
 	MSTP030, MSTP029, MSTP028, MSTP027, MSTP026, MSTP025, MSTP024, MSTP023,
@@ -95,6 +95,8 @@ enum { MSTP323, MSTP322, MSTP321, MSTP320,
 	MSTP_NR };
 
 static struct clk mstp_clks[MSTP_NR] = {
+	[MSTP331] = SH_CLK_MSTP32(&div4_clks[DIV4_S4], MSTPCR3, 31, 0), /* MMC0 */
+	[MSTP330] = SH_CLK_MSTP32(&div4_clks[DIV4_S4], MSTPCR3, 30, 0), /* MMC1 */
 	[MSTP323] = SH_CLK_MSTP32(&div4_clks[DIV4_P], MSTPCR3, 23, 0), /* SDHI0 */
 	[MSTP322] = SH_CLK_MSTP32(&div4_clks[DIV4_P], MSTPCR3, 22, 0), /* SDHI1 */
 	[MSTP321] = SH_CLK_MSTP32(&div4_clks[DIV4_P], MSTPCR3, 21, 0), /* SDHI2 */
@@ -195,6 +197,9 @@ static struct clk_lookup lookups[] = {
 	CLKDEV_CON_ID("sgx", &mstp_clks[MSTP105]), /* SGX */
 	CLKDEV_DEV_ID("rcarfb.0", &mstp_clks[MSTP103]), /* DU0 */
 	CLKDEV_DEV_ID("rcarfb.1", &mstp_clks[MSTP103]), /* DU1 */
+
+	CLKDEV_CON_ID("mmc0", &mstp_clks[MSTP331]), /* MMC0 */
+	CLKDEV_CON_ID("mmc1", &mstp_clks[MSTP330]), /* MMC1 */
 
 	CLKDEV_CON_ID("usb_fck", &mstp_clks[MSTP100]),
 	CLKDEV_CON_ID("usb_fck2", &mstp_clks[MSTP101]),
