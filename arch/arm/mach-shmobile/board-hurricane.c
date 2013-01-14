@@ -716,6 +716,9 @@ static struct resource rcar_vin3_resources[] = {
 };
 
 static struct rcar_vin_info rcar_vin_info = {};
+static struct rcar_vin_info rcar_vin_10bit_info = {
+	.format = V4L2_MBUS_FMT_YUYV10_2X10,
+};
 static u64 rcarvin_dmamask = DMA_BIT_MASK(32);
 
 static struct platform_device rcar_vin0_device = {
@@ -725,7 +728,11 @@ static struct platform_device rcar_vin0_device = {
 	.resource  = rcar_vin0_resources,
 	.dev  = {
 		.dma_mask = &rcarvin_dmamask,
+#ifdef CONFIG_MACH_HURRICANE_10BIT_CAMERAS
+		.platform_data = &rcar_vin_10bit_info,
+#else
 		.platform_data = &rcar_vin_info,
+#endif
 		.coherent_dma_mask = DMA_BIT_MASK(32),
 	},
 };
@@ -737,7 +744,11 @@ static struct platform_device rcar_vin1_device = {
 	.resource  = rcar_vin1_resources,
 	.dev  = {
 		.dma_mask = &rcarvin_dmamask,
+#ifdef CONFIG_MACH_HURRICANE_10BIT_CAMERAS
+		.platform_data = &rcar_vin_10bit_info,
+#else
 		.platform_data = &rcar_vin_info,
+#endif
 		.coherent_dma_mask = DMA_BIT_MASK(32),
 	},
 };
@@ -1022,6 +1033,10 @@ static void __init hurricane_init(void)
 
 	/* VIN0 */
 	gpio_request(GPIO_FN_VI0_CLK, NULL);
+#ifdef CONFIG_MACH_HURRICANE_10BIT_CAMERAS
+	gpio_request(GPIO_FN_VI0_G1, NULL);
+	gpio_request(GPIO_FN_VI0_G0, NULL);
+#endif
 	gpio_request(GPIO_FN_VI0_DATA7_VI0_B7, NULL);
 	gpio_request(GPIO_FN_VI0_DATA6_VI0_B6, NULL);
 	gpio_request(GPIO_FN_VI0_DATA5_VI0_B5, NULL);
@@ -1033,6 +1048,10 @@ static void __init hurricane_init(void)
 
 	/* VIN1 */
 	gpio_request(GPIO_FN_VI1_CLK, NULL);
+#ifdef CONFIG_MACH_HURRICANE_10BIT_CAMERAS
+	gpio_request(GPIO_FN_VI1_G1, NULL);
+	gpio_request(GPIO_FN_VI1_G0, NULL);
+#endif
 	gpio_request(GPIO_FN_VI1_DATA7_VI1_B7, NULL);
 	gpio_request(GPIO_FN_VI1_DATA6_VI1_B6, NULL);
 	gpio_request(GPIO_FN_VI1_DATA5_VI1_B5, NULL);
@@ -1055,6 +1074,7 @@ static void __init hurricane_init(void)
 	gpio_request(GPIO_FN_VI2_DATA0_VI2_B0, NULL);
 #endif
 
+#ifndef CONFIG_MACH_HURRICANE_10BIT_CAMERAS
 	/* VIN3 */
 	gpio_request(GPIO_FN_VI3_CLK, NULL);
 	gpio_request(GPIO_FN_VI3_DATA7, NULL);
@@ -1065,6 +1085,7 @@ static void __init hurricane_init(void)
 	gpio_request(GPIO_FN_VI3_DATA2, NULL);
 	gpio_request(GPIO_FN_VI3_DATA1, NULL);
 	gpio_request(GPIO_FN_VI3_DATA0, NULL);
+#endif /* !CONFIG_MACH_HURRICANE_10BIT_CAMERAS */
 
 
 	/* On-Chip Ethernet */

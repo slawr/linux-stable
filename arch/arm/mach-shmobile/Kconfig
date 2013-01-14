@@ -183,6 +183,15 @@ choice
 
 endchoice
 
+config MACH_HURRICANE_10BIT_CAMERAS
+	depends on MACH_HURRICANE
+	bool "Use 10-bit BT.656 cameras"
+	help
+	  Use 10-bit BT.656 OmniVision ov10635 cameras in VIN0 and VIN1.
+	  Turning this off means the board is setup for 8-bit BT.656 OmniVision cameras.
+	  Note: only VIN0 and VIN1 on the R-Car H1 support 10-bit YUV data.
+	  Due to pinmux conflicts with VIN1, you can no longer use VIN3.
+
 comment "SH-Mobile System Configuration"
 
 config CPU_HAS_INTEVT
