@@ -89,7 +89,7 @@ static struct clk div4_clks[DIV4_NR] = {
 enum { MSTP331, MSTP330,
 	MSTP323, MSTP322, MSTP321, MSTP320, MSTP312, MSTP311, MSTP310, MSTP309,
 	MSTP308, MSTP307,
-	MSTP120, MSTP115, MSTP114, MSTP110, MSTP109,
+	MSTP120, MSTP116, MSTP115, MSTP114, MSTP110, MSTP109,
 	MSTP108, MSTP105, MSTP103, MSTP101, MSTP100,
 	MSTP030, MSTP029, MSTP028, MSTP027, MSTP026, MSTP025, MSTP024, MSTP023,
 	MSTP022, MSTP021, MSTP016,
@@ -110,6 +110,7 @@ static struct clk mstp_clks[MSTP_NR] = {
 	[MSTP308] = SH_CLK_MSTP32(&div4_clks[DIV4_P], MSTPCR3, 8, 0), /* SSI8 */
 	[MSTP307] = SH_CLK_MSTP32(&div4_clks[DIV4_P], MSTPCR3, 7, 0), /* SSI9 */
 	[MSTP120] = SH_CLK_MSTP32(&div4_clks[DIV4_S], MSTPCR1, 20, 0), /* VIN3 */
+	[MSTP116] = SH_CLK_MSTP32(&div4_clks[DIV4_S], MSTPCR1, 16, 0), /* PCIe */
 	[MSTP115] = SH_CLK_MSTP32(&div4_clks[DIV4_S], MSTPCR1, 15, 0), /* SATA */
 	[MSTP114] = SH_CLK_MSTP32(&div4_clks[DIV4_P], MSTPCR1, 14, CLK_ENABLE_ON_INIT), /* ETH */
 	[MSTP110] = SH_CLK_MSTP32(&div4_clks[DIV4_S], MSTPCR1, 10, 0), /* VIN0 */
@@ -200,6 +201,7 @@ static struct clk_lookup lookups[] = {
 	CLKDEV_DEV_ID("sh_mobile_sdhi.3", &mstp_clks[MSTP320]), /* SDHI3 */
 	CLKDEV_DEV_ID("sh-eth", &mstp_clks[MSTP114]),
 	CLKDEV_DEV_ID("rcar_vin.3", &mstp_clks[MSTP120]), /* VIN3 */
+	CLKDEV_CON_ID("pciec", &mstp_clks[MSTP116]), /* PCIe */
 	CLKDEV_CON_ID("sata", &mstp_clks[MSTP115]), /* SATA */
 	CLKDEV_DEV_ID("rcar_vin.0", &mstp_clks[MSTP110]), /* VIN0 */
 	CLKDEV_DEV_ID("rcar_vin.1", &mstp_clks[MSTP109]), /* VIN1 */
