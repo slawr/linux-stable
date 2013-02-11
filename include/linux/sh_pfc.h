@@ -63,10 +63,16 @@ struct pinmux_data_reg {
 	unsigned long reg, reg_width, reg_shadow;
 	pinmux_enum_t *enum_ids;
 	void __iomem *mapped_reg;
+	unsigned long wreg;	/* separate write reg */
+	void __iomem *mapped_wreg;
 };
 
 #define PINMUX_DATA_REG(name, r, r_width) \
-	.reg = r, .reg_width = r_width,	\
+	.reg = r, .wreg = r, .reg_width = r_width,	\
+	.enum_ids = (pinmux_enum_t [r_width]) \
+
+#define PINMUX_DATA_REG2(name, r, r2, r_width) \
+	.reg = r, .wreg = r2, .reg_width = r_width,	\
 	.enum_ids = (pinmux_enum_t [r_width]) \
 
 struct pinmux_irq {
