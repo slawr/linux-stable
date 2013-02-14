@@ -188,6 +188,8 @@ struct hpb_dmae_chan {
 	int tran_mode;			/* DMA transfer mode */
 	u32 __iomem *base;
 	char dev_id[16];		/* unique name per DMAC of channel */
+	int plane_cnt;
+	int desc_flag;
 };
 
 struct hpb_dmae_device {
