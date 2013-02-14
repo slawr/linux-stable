@@ -50,7 +50,6 @@ enum hpb_dmae_desc_status {
 #define PLANE_OFF 0
 
 static struct hpb_dmae_device *g_hpbdev;
-static const struct hpb_dmae_channel *g_chanp;
 
 /* A bitmask with bits enough for enum hpb_dmae_slave_chan_id */
 static unsigned long hpb_dmae_slave_used[BITS_TO_LONGS(HPB_DMA_SLAVE_NUMBER)];
@@ -427,17 +426,13 @@ static void dmae_do_tasklet(unsigned long data)
 static irqreturn_t hpb_dmae_interrupt(int irq, void *data)
 {
 	u32 ch;
-	u32 ch_id;
 	irqreturn_t ret = IRQ_NONE;
 	struct hpb_dmae_device *hpbdev;
-	struct hpb_dmae_chan *hpb_newchan;
 	struct hpb_dmae_chan *hpb_chan = (struct hpb_dmae_chan *)data;
 
-	ch_id = irq - g_chanp->ch_irq;  /* DMA Request Channel ID No.*/
 	ch = irq - IRQ_DMAC_H(0); /* DMA Channel No.*/
 
 	hpbdev = g_hpbdev;
-	hpb_newchan = hpbdev->chan[ch_id];
 
 	/* Check Complete DMA Transfer */
 	if (dmadintsr_read(hpbdev, ch) == 0x01) {
@@ -1195,7 +1190,6 @@ static int __init hpb_dmae_probe(struct platform_device *pdev)
 	dma_async_device_register(&hpbdev->common);
 
 	g_hpbdev = hpbdev;
-	g_chanp = &hpbdev->pdata->channel[0];
 
 	return err;
 
