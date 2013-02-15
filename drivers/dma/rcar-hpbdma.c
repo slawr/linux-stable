@@ -73,43 +73,36 @@ static void dmadcmdr_write(struct hpb_dmae_device *hpbdev, u32 data)
 
 static void dmahsrstr_write(struct hpb_dmae_device *hpbdev, u32 ch)
 {
-	__raw_writel(0x01, hpbdev->common_reg + HSRSTR(ch) / sizeof(u32));
+	__raw_writel(1, hpbdev->common_reg + HSRSTR(ch) / sizeof(u32));
 }
 
 static u32 dmadintsr_read(struct hpb_dmae_device *hpbdev, u32 ch)
 {
-	if (ch < 32)
-		return (__raw_readl(hpbdev->common_reg + DINTSR0 / sizeof(u32))
-			 >> ch) & 0x01;
-	else
-		return (__raw_readl(hpbdev->common_reg + DINTSR1 / sizeof(u32))
-			 >> (ch - 32)) & 0x01;
+	u32 offset = DINTSR0 + (ch >> 3);
+	u32 __iomem *reg = hpbdev->common_reg + offset / sizeof(u32);
+	u32 pos = ch & 31;
+	return (__raw_readl(reg) >> pos) & 1;
 }
 
 static void dmadintcr_write(struct hpb_dmae_device *hpbdev, u32 ch)
 {
-	if (ch < 32)
-		__raw_writel((0x01 << ch), hpbdev->common_reg + DINTCR0
-			 / sizeof(u32));
-	else
-		__raw_writel((0x01 << (ch-32)), hpbdev->common_reg + DINTCR1
-			 / sizeof(u32));
+	u32 offset = DINTCR0 + (ch >> 3);
+	u32 __iomem *reg = hpbdev->common_reg + offset / sizeof(u32);
+	u32 pos = ch & 31;
+	__raw_writel((1 << pos), reg);
 }
 
-static void dmae_enable_int(struct hpb_dmae_device *hpbdev, u32 dmach)
+static void dmae_enable_int(struct hpb_dmae_device *hpbdev, u32 ch)
 {
-	int intreg;
+	u32 offset = DINTMR0 + (ch >> 3);
+	u32 __iomem *reg = hpbdev->common_reg + offset / sizeof(u32);
+	u32 pos = ch & 31;
+	int val;
 
 	spin_lock_bh(&hpbdev->reg_lock);
-	if (dmach < 32) {
-		intreg = __raw_readl(hpbdev->common_reg + DINTMR0 / sizeof(u32));
-		__raw_writel(((0x01 << dmach) | intreg),
-			hpbdev->common_reg + DINTMR0 / sizeof(u32));
-	} else {
-		intreg = __raw_readl(hpbdev->common_reg + DINTMR1 / sizeof(u32));
-		__raw_writel(((0x01 << (dmach-32)) | intreg),
-			hpbdev->common_reg + DINTMR1 / sizeof(u32));
-	}
+	val = __raw_readl(reg);
+	val |= (1 << pos);
+	__raw_writel(val, reg);
 	spin_unlock_bh(&hpbdev->reg_lock);
 }
 
@@ -148,37 +141,21 @@ static void dmae_set_async_mode(struct hpb_dmae_device *hpbdev,
 	spin_unlock_bh(&hpbdev->reg_lock);
 }
 
-static void dmae_select_shpt(struct hpb_dmae_device *hpbdev, u32 dmach,
+static void dmae_select_shpt(struct hpb_dmae_device *hpbdev, u32 ch,
 	u32 flags)
 {
-	u32 reg;
+	u32 offset = HPB_DMSHPT0 + (ch >> 3);
+	u32 __iomem *reg = hpbdev->common_reg + offset / sizeof(u32);
+	u32 pos = ch & 31;
+	u32 val;
 
 	spin_lock_bh(&hpbdev->reg_lock);
-	if (flags & HPB_DMAE_SET_SHPT1) { /* select SuperHywayPort1 */
-		if (dmach < 32) {
-			reg = __raw_readl(hpbdev->common_reg +
-					HPB_DMSHPT0 / sizeof(u32));
-			__raw_writel(((0x01 << dmach) | reg),
-				hpbdev->common_reg + HPB_DMSHPT0 / sizeof(u32));
-		} else {
-			reg = __raw_readl(hpbdev->common_reg +
-					HPB_DMSHPT1 / sizeof(u32));
-			__raw_writel(((0x01 << (dmach-32)) | reg),
-				hpbdev->common_reg + HPB_DMSHPT1 / sizeof(u32));
-		}
-	} else { /* select SuperHywayPort0 */
-		if (dmach < 32) {
-			reg = __raw_readl(hpbdev->common_reg +
-					HPB_DMSHPT0 / sizeof(u32));
-			__raw_writel((~(0x01 << dmach) & reg),
-				hpbdev->common_reg + HPB_DMSHPT0 / sizeof(u32));
-		} else {
-			reg = __raw_readl(hpbdev->common_reg +
-					HPB_DMSHPT1 / sizeof(u32));
-			__raw_writel((~(0x01 << (dmach-32)) & reg),
-				hpbdev->common_reg + HPB_DMSHPT1 / sizeof(u32));
-		}
-	}
+	val = __raw_readl(reg);
+	if (flags & HPB_DMAE_SET_SHPT1) /* select SuperHywayPort1 */
+		val |= (1 << pos);
+	else /* select SuperHywayPort0 */
+		val &= ~(1 << pos);
+	__raw_writel(val, reg);
 	spin_unlock_bh(&hpbdev->reg_lock);
 }
 
