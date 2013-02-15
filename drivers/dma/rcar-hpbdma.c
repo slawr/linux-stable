@@ -252,13 +252,7 @@ static dma_cookie_t hpb_dmae_tx_submit(struct dma_async_tx_descriptor *tx)
 
 	spin_lock_bh(&hpb_chan->desc_lock);
 
-	cookie = hpb_chan->common.cookie;
-	cookie++;
-	if (cookie < 0)
-		cookie = 1;
-
-	hpb_chan->common.cookie = cookie;
-	tx->cookie = cookie;
+	cookie = dma_cookie_assign(tx);
 
 	/* Mark all chunks of this descriptor as submitted, move to the queue */
 	list_for_each_entry_safe(chunk, c, desc->node.prev, node) {
@@ -962,20 +956,13 @@ static enum dma_status hpb_dmae_tx_status(struct dma_chan *chan,
 					struct dma_tx_state *txstate)
 {
 	struct hpb_dmae_chan *hpb_chan = to_hpb_chan(chan);
-	dma_cookie_t last_used;
-	dma_cookie_t last_complete;
 	enum dma_status status;
 
 	hpb_dmae_chan_ld_cleanup(hpb_chan, false);
 
-	last_used = chan->cookie;
-	last_complete = hpb_chan->common.completed_cookie;
-	BUG_ON(last_complete < 0);
-	dma_set_tx_state(txstate, last_complete, last_used, 0);
-
 	spin_lock_bh(&hpb_chan->desc_lock);
 
-	status = dma_async_is_complete(cookie, last_complete, last_used);
+	status = dma_cookie_status(chan, cookie, txstate);
 
 	/*
 	 * If we don't find cookie on the queue, it has been aborted and we have
