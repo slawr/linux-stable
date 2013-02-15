@@ -876,13 +876,13 @@ static dma_async_tx_callback __ld_cleanup(struct hpb_dmae_chan *hpb_chan,
 			cookie = tx->cookie;
 
 		if (desc->mark == DESC_COMPLETED && desc->chunks == 1) {
-			if (hpb_chan->completed_cookie != desc->cookie - 1)
+			if (hpb_chan->common.completed_cookie != desc->cookie - 1)
 				dev_dbg(hpb_chan->dev,
 					"Completing cookie %d, expected %d\n",
 					desc->cookie,
-					hpb_chan->completed_cookie + 1);
+					hpb_chan->common.completed_cookie + 1);
 
-			hpb_chan->completed_cookie = desc->cookie;
+			hpb_chan->common.completed_cookie = desc->cookie;
 		}
 
 		/* Call callback on the last chunk */
@@ -946,7 +946,7 @@ static void hpb_dmae_chan_ld_cleanup(struct hpb_dmae_chan *hpb_chan, bool all)
 
 	if (all)
 		/* Terminating - forgive uncompleted cookies */
-		hpb_chan->completed_cookie = hpb_chan->common.cookie;
+		hpb_chan->common.completed_cookie = hpb_chan->common.cookie;
 }
 
 static void hpb_dmae_memcpy_issue_pending(struct dma_chan *chan)
@@ -967,7 +967,7 @@ static enum dma_status hpb_dmae_tx_status(struct dma_chan *chan,
 	hpb_dmae_chan_ld_cleanup(hpb_chan, false);
 
 	last_used = chan->cookie;
-	last_complete = hpb_chan->completed_cookie;
+	last_complete = hpb_chan->common.completed_cookie;
 	BUG_ON(last_complete < 0);
 	dma_set_tx_state(txstate, last_complete, last_used, 0);
 
