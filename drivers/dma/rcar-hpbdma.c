@@ -336,7 +336,7 @@ static void hpb_chan_xfer_ld_queue(struct hpb_dmae_chan *hpb_chan)
 
 	spin_lock_bh(&hpb_chan->desc_lock);
 
-	/* Find the first not transferred desciptor */
+	/* Find the first not transferred descriptor */
 	list_for_each_entry(desc, &hpb_chan->ld_queue, node) {
 		if (desc->mark == DESC_SUBMITTED) {
 			dev_dbg(hpb_chan->dev, "Queue #%d to %d: %u@%x -> %x\n",
