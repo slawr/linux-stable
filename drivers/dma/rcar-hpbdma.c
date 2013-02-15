@@ -176,8 +176,7 @@ static int hpb_dmae_rst(struct hpb_dmae_device *hpbdev)
 
 static unsigned int calc_xmit_shift(struct hpb_dmae_chan *hpb_chan)
 {
-	struct hpb_dmae_device *hpbdev = container_of(hpb_chan->common.device,
-						struct hpb_dmae_device, common);
+	struct hpb_dmae_device *hpbdev = to_hpb_dev(hpb_chan);
 	struct hpb_dmae_pdata *pdata = hpbdev->pdata;
 
 	int cnt;
@@ -309,9 +308,7 @@ static struct hpb_desc *hpb_dmae_get_desc(struct hpb_dmae_chan *hpb_chan)
 static const struct hpb_dmae_slave_config *hpb_dmae_find_slave(
 	struct hpb_dmae_chan *hpb_chan, struct hpb_dmae_slave *param)
 {
-	struct dma_device *dma_dev = hpb_chan->common.device;
-	struct hpb_dmae_device *hpbdev = container_of(dma_dev,
-					struct hpb_dmae_device, common);
+	struct hpb_dmae_device *hpbdev = to_hpb_dev(hpb_chan);
 	struct hpb_dmae_pdata *pdata = hpbdev->pdata;
 
 	int i;
@@ -329,8 +326,7 @@ static void dmae_do_tasklet(unsigned long data);
 static void hpb_chan_xfer_ld_queue(struct hpb_dmae_chan *hpb_chan)
 {
 	struct hpb_desc *desc;
-	struct hpb_dmae_device *hpbdev = container_of(hpb_chan->common.device,
-						struct hpb_dmae_device, common);
+	struct hpb_dmae_device *hpbdev = to_hpb_dev(hpb_chan);
 	struct hpb_dmae_slave *param = hpb_chan->common.private;
 	int id = hpb_chan->id;
 

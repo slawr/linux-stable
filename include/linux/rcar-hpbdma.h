@@ -167,6 +167,8 @@
 #define to_hpb_chan(chan) container_of(chan, struct hpb_dmae_chan, common)
 #define to_hpb_desc(lh) container_of(lh, struct hpb_desc, node)
 #define tx_to_hpb_desc(tx) container_of(tx, struct hpb_desc, async_tx)
+#define to_hpb_dev(chan) container_of(chan->common.device,\
+				     struct hpb_dmae_device, common)
 
 #define TRAN_SINGLE	1
 #define TRAN_DOUBLE	2
