@@ -35,6 +35,8 @@
 #include <linux/rcar-hpbdma.h>
 #include <mach/irqs.h>
 
+#include "dmaengine.h"
+
 /* DMA descriptor control */
 enum hpb_dmae_desc_status {
 	DESC_IDLE,
