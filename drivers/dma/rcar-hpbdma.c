@@ -998,6 +998,7 @@ static int __devinit hpb_dmae_chan_probe(struct hpb_dmae_device *hpbdev, int id)
 
 	/* copy struct dma_device */
 	new_hpb_chan->common.device = &hpbdev->common;
+	dma_cookie_init(&new_hpb_chan->common);
 	new_hpb_chan->dev = hpbdev->common.dev;
 	new_hpb_chan->id = id;
 
