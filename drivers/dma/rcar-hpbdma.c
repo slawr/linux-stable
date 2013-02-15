@@ -1266,3 +1266,4 @@ module_exit(hpb_dmae_exit);
 
 MODULE_DESCRIPTION("Renesas HPB DMA Engine driver");
 MODULE_LICENSE("GPL");
+MODULE_ALIAS("platform:hpb-dma-engine");
