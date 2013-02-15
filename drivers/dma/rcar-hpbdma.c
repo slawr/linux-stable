@@ -182,12 +182,16 @@ static unsigned int calc_xmit_shift(struct hpb_dmae_chan *hpb_chan)
 
 	int cnt;
 	int width = hpb_dmae_readl(hpb_chan, DCR);
+	int dst_width = width & 3;
+	int src_width = (width >> 8) & 3;
 
-	if (((width & (0x03<<8)) == (0x00<<8)) && ((width & 0x03) == 0x00))
+	if (src_width != dst_width)
+		cnt = 0;
+	else if (src_width == 0x00)
 		cnt = 0; /* 8bit */
-	else if (((width & (0x03<<8)) == (0x01<<8)) && ((width & 0x03) == 0x01))
+	else if (src_width == 0x01)
 		cnt = 1; /* 16bit */
-	else if (((width & (0x03<<8)) == (0x02<<8)) && ((width & 0x03) == 0x02))
+	else if (src_width == 0x02)
 		cnt = 2; /* 32bit */
 	else
 		cnt = 0;
