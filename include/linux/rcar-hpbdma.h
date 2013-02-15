@@ -198,7 +198,7 @@ struct hpb_dmae_device {
 	struct hpb_dmae_chan *chan[HPB_DMAC_USE_CHANNELS];
 	struct hpb_dmae_pdata *pdata;
 	u32 __iomem *chan_reg;
-	u32 __iomem *comm_reg;
+	u32 __iomem *common_reg;
 	u32 __iomem *reset_reg;
 	u32 __iomem *mode_reg;
 };
