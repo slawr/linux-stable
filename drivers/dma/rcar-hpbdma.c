@@ -51,8 +51,6 @@ enum hpb_dmae_desc_status {
 #define PLANE_ON 1
 #define PLANE_OFF 0
 
-static struct hpb_dmae_device *g_hpbdev;
-
 /* A bitmask with bits enough for enum hpb_dmae_slave_chan_id */
 static unsigned long hpb_dmae_slave_used[BITS_TO_LONGS(HPB_DMA_SLAVE_NUMBER)];
 
@@ -395,14 +393,12 @@ static irqreturn_t hpb_dmae_interrupt(int irq, void *data)
 {
 	irqreturn_t ret = IRQ_NONE;
 	struct hpb_dmae_chan *hpb_chan = data;
-	struct hpb_dmae_device *hpbdev;
+	struct hpb_dmae_device *hpbdev = to_hpb_dev(hpb_chan);
 	u32 ch;
 
 	spin_lock(&hpb_chan->desc_lock);
 
 	ch = irq - IRQ_DMAC_H(0); /* DMA Channel No.*/
-
-	hpbdev = g_hpbdev;
 
 	/* Check Complete DMA Transfer */
 	if (dmadintsr_read(hpbdev, ch) == 0x01) {
@@ -419,18 +415,15 @@ static irqreturn_t hpb_dmae_interrupt(int irq, void *data)
 
 static int hpb_dmae_alloc_chan_resources(struct dma_chan *chan)
 {
-	struct hpb_dmae_device *hpbdev;
+	struct hpb_dmae_chan *hpb_chan = to_hpb_chan(chan);
+	struct hpb_dmae_device *hpbdev = to_hpb_dev(hpb_chan);
 	struct hpb_dmae_slave *param;
-	struct hpb_dmae_chan *hpb_chan;
 	struct hpb_desc *desc;
 	const struct hpb_dmae_channel *chan_pdata;
 	struct hpb_dmae_pdata *pdata;
 	int ret, i;
 
-	hpbdev = g_hpbdev;
 	param = chan->private;
-	hpbdev->chan[param->slave_id] = to_hpb_chan(chan);
-	hpb_chan = hpbdev->chan[param->slave_id];
 	chan_pdata = &hpbdev->pdata->channel[0];
 	pdata = hpbdev->pdata;
 
@@ -438,7 +431,6 @@ static int hpb_dmae_alloc_chan_resources(struct dma_chan *chan)
 
 	/* copy struct dma_device */
 	hpb_chan->common.device = &hpbdev->common;
-	hpb_chan->dev = hpbdev->common.dev;
 
 	/*
 	 * This relies on the guarantee from dmaengine that alloc_chan_resources
@@ -1163,8 +1155,6 @@ static int __init hpb_dmae_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, hpbdev);
 	dma_async_device_register(&hpbdev->common);
-
-	g_hpbdev = hpbdev;
 
 	return err;
 
