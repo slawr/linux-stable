@@ -314,7 +314,6 @@ static const struct hpb_dmae_slave_config *hpb_dmae_find_slave(
 
 	return NULL;
 }
-static void dmae_do_tasklet(unsigned long data);
 
 /* Called under spin_lock_irq(&hpb_chan->desc_lock) */
 static void hpb_chan_xfer_ld_queue(struct hpb_dmae_chan *hpb_chan)
