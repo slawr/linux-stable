@@ -322,6 +322,13 @@ static void hpb_chan_xfer_ld_queue(struct hpb_dmae_chan *hpb_chan)
 	struct hpb_dmae_device *hpbdev = to_hpb_dev(hpb_chan);
 	struct hpb_dmae_slave *param = hpb_chan->common.private;
 
+	if (param->config->flags & HPB_DMAE_SET_ASYNC_MODE)
+		dmae_set_async_mode(hpbdev, MD_MASK(param->config->dma_ch),
+					param->config->mdr);
+	dmae_select_shpt(hpbdev, param->config->dma_ch, param->config->flags);
+	dmae_set_dcr(hpb_chan, param->config->dcr);
+	dmae_set_port(hpb_chan, param->config->port);
+
 	/* Find the first not transferred descriptor */
 	list_for_each_entry(desc, &hpb_chan->ld_queue, node) {
 		if (desc->mark == DESC_SUBMITTED) {
@@ -496,12 +503,6 @@ static int hpb_dmae_alloc_chan_resources(struct dma_chan *chan)
 		else
 			hpb_chan->tran_mode = TRAN_SINGLE;
 
-		if (cfg->flags & HPB_DMAE_SET_ASYNC_MODE)
-			dmae_set_async_mode(hpbdev, MD_MASK(cfg->dma_ch),
-						cfg->mdr);
-		dmae_select_shpt(hpbdev, cfg->dma_ch, cfg->flags);
-		dmae_set_dcr(hpb_chan, cfg->dcr);
-		dmae_set_port(hpb_chan, cfg->port);
 		dmae_enable_int(hpbdev, cfg->dma_ch);
 
 		/* Init DMA tasklet */
