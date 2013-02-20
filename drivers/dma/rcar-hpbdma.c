@@ -399,12 +399,28 @@ static irqreturn_t hpb_dmae_interrupt(int irq, void *data)
 {
 	irqreturn_t ret = IRQ_NONE;
 	struct hpb_dmae_chan *hpb_chan = data;
+	struct hpb_dmae_chan *hpb_chan_tx;
+	struct hpb_dmae_chan *hpb_chan_rx;
 	struct hpb_dmae_device *hpbdev = to_hpb_dev(hpb_chan);
 	u32 ch;
-
-	spin_lock(&hpb_chan->desc_lock);
+	u32 dcr;
 
 	ch = irq - IRQ_DMAC_H(0); /* DMA Channel No.*/
+
+	hpb_chan_tx = hpbdev->chans[ch].tx;
+	hpb_chan_rx = hpbdev->chans[ch].rx;
+
+	if (hpb_chan_tx)
+		spin_lock(&hpb_chan_tx->desc_lock);
+	if (hpb_chan_rx)
+		spin_lock(&hpb_chan_rx->desc_lock);
+
+	/* tx or rx logical channel? */
+	dcr = hpb_dmae_readl(hpb_chan, DCR);
+	if (dcr & DMDL)
+		hpb_chan = hpb_chan_tx;
+	else
+		hpb_chan = hpb_chan_rx;
 
 	/* Check Complete DMA Transfer */
 	if (dmadintsr_read(hpbdev, ch) == 0x01) {
@@ -414,7 +430,10 @@ static irqreturn_t hpb_dmae_interrupt(int irq, void *data)
 		tasklet_schedule(&hpb_chan->tasklet);
 	}
 
-	spin_unlock(&hpb_chan->desc_lock);
+	if (hpb_chan_tx)
+		spin_unlock(&hpb_chan_tx->desc_lock);
+	if (hpb_chan_rx)
+		spin_unlock(&hpb_chan_rx->desc_lock);
 
 	return ret;
 }
@@ -423,6 +442,7 @@ static int hpb_dmae_alloc_chan_resources(struct dma_chan *chan)
 {
 	struct hpb_dmae_chan *hpb_chan = to_hpb_chan(chan);
 	struct hpb_dmae_device *hpbdev = to_hpb_dev(hpb_chan);
+	struct hpb_dmae_chans *hw_chans;
 	struct hpb_dmae_slave *param;
 	struct hpb_desc *desc;
 	const struct hpb_dmae_channel *chan_pdata;
@@ -482,16 +502,29 @@ static int hpb_dmae_alloc_chan_resources(struct dma_chan *chan)
 			chan_pdata++;
 		}
 
-		/* set up channel irq */
-		ret = request_irq(hpb_chan->irq,
-				&hpb_dmae_interrupt, IRQF_DISABLED,
-				hpb_chan->dev_id, hpb_chan);
-		if (ret) {
-			dev_err(hpbdev->common.dev,
-				"DMA channel request_irq error "
-				"with return %d\n", ret);
-			goto err_no_irq;
+		/*
+		 * Only request an irq if we haven't already done so for this
+		 * dma hardware channel.
+		 */
+		hw_chans = &hpbdev->chans[cfg->dma_ch];
+		if (!hw_chans->tx && !hw_chans->rx) {
+			/* set up channel irq */
+			ret = request_irq(hpb_chan->irq,
+					&hpb_dmae_interrupt, IRQF_SHARED,
+					hpb_chan->dev_id, hpb_chan);
+			if (ret) {
+				dev_err(hpbdev->common.dev,
+					"DMA channel request_irq error "
+					"with return %d\n", ret);
+				goto err_no_irq;
+			}
 		}
+
+		/* Store information about the tx/rx logical channels */
+		if (cfg->dcr & DMDL)
+			hw_chans->tx = hpb_chan;
+		else
+			hw_chans->rx = hpb_chan;
 
 		if ((cfg->dcr & (CT | DIP)) == CT ||
 		    (cfg->dcr & (CT | DIP)) == DIP) {
@@ -547,6 +580,9 @@ err_no_irq:
 static void hpb_dmae_free_chan_resources(struct dma_chan *chan)
 {
 	struct hpb_dmae_chan *hpb_chan = to_hpb_chan(chan);
+	struct hpb_dmae_device *hpbdev = to_hpb_dev(hpb_chan);
+	struct hpb_dmae_slave *param = hpb_chan->common.private;
+	struct hpb_dmae_chans *hw_chans;
 	struct hpb_desc *desc, *_desc;
 	LIST_HEAD(list);
 	int descs = hpb_chan->descs_allocated;
@@ -565,7 +601,17 @@ static void hpb_dmae_free_chan_resources(struct dma_chan *chan)
 	if (!list_empty(&hpb_chan->ld_queue))
 		hpb_dmae_chan_ld_cleanup(hpb_chan, true);
 
-	free_irq(hpb_chan->irq, hpb_chan);
+	/* Freeing the tx or rx channel? */
+	hw_chans = &hpbdev->chans[param->config->dma_ch];
+
+	if (param->config->dcr & DMDL)
+		hw_chans->tx = NULL;
+	else
+		hw_chans->rx = NULL;
+
+	/* Only free the irq when both logical channels have been freed */
+	if (!hw_chans->tx && !hw_chans->rx)
+		free_irq(hpb_chan->irq, hpb_chan);
 
 	if (chan->private) {
 		/* The caller is holding dma_list_mutex */

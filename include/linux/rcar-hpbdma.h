@@ -193,10 +193,16 @@ struct hpb_dmae_chan {
 	int desc_flag;
 };
 
+struct hpb_dmae_chans {
+	struct hpb_dmae_chan *rx;
+	struct hpb_dmae_chan *tx;
+};
+
 struct hpb_dmae_device {
 	spinlock_t reg_lock;		/* comm_reg operation lock */
 	struct dma_device common;
-	struct hpb_dmae_chan *chan[HPB_DMAC_USE_CHANNELS];
+	struct hpb_dmae_chan *chan[2*HPB_DMAC_USE_CHANNELS];	/* separate tx & rx channels */
+	struct hpb_dmae_chans chans[HPB_DMA_USE_END_CH];	/* physical channels */
 	struct hpb_dmae_pdata *pdata;
 	u32 __iomem *chan_reg;
 	u32 __iomem *common_reg;
