@@ -1170,10 +1170,14 @@ static irqreturn_t sh_mmcif_intr(int irq, void *dev_id)
 		sh_mmcif_writel(host->addr, MMCIF_CE_INT, ~INT_CRSPE);
 		sh_mmcif_bitclr(host, MMCIF_CE_INT_MASK, MASK_MCRSPE);
 	} else if (state & INT_BUFREN) {
-		sh_mmcif_writel(host->addr, MMCIF_CE_INT, ~INT_BUFREN);
+		sh_mmcif_writel(host->addr, MMCIF_CE_INT,
+			~(INT_CMD12DRE | INT_CMD12RBE |
+			  INT_CMD12CRE | INT_BUFREN));
 		sh_mmcif_bitclr(host, MMCIF_CE_INT_MASK, MASK_MBUFREN);
 	} else if (state & INT_BUFWEN) {
-		sh_mmcif_writel(host->addr, MMCIF_CE_INT, ~INT_BUFWEN);
+		sh_mmcif_writel(host->addr, MMCIF_CE_INT,
+			~(INT_CMD12DRE | INT_CMD12RBE |
+			  INT_CMD12CRE | INT_BUFWEN));
 		sh_mmcif_bitclr(host, MMCIF_CE_INT_MASK, MASK_MBUFWEN);
 	} else if (state & INT_CMD12DRE) {
 		sh_mmcif_writel(host->addr, MMCIF_CE_INT,
