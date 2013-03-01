@@ -81,25 +81,24 @@ static const struct hpb_dmae_slave_config rcar_dmae_slaves[] = {
 	},
 };
 
-#define DMAE_CHANNEL(_offset, _irq, _s_id)	\
+#define DMAE_CHANNEL(_irq, _s_id)	\
 	{						\
-		.offset		= _offset,		\
 		.ch_irq		= _irq,			\
-		.s_id		= _s_id,			\
+		.s_id		= _s_id,		\
 	}
 
 /* comment out for not using Ch */
 static const struct hpb_dmae_channel rcar_dmae_channels[] = {
 	/* ch.21 SD0 */
-	DMAE_CHANNEL(0x540, IRQ_DMAC_H(21), HPBDMA_SLAVE_SDHI0_TX),
+	DMAE_CHANNEL(IRQ_DMAC_H(21), HPBDMA_SLAVE_SDHI0_TX),
 	/* ch.22 SD0 */
-	DMAE_CHANNEL(0x580, IRQ_DMAC_H(22), HPBDMA_SLAVE_SDHI0_RX),
+	DMAE_CHANNEL(IRQ_DMAC_H(22), HPBDMA_SLAVE_SDHI0_RX),
 	/* ch.28 SSI0 */
-	DMAE_CHANNEL(0x700, IRQ_DMAC_H(28), HPBDMA_SLAVE_SSI0_TX_ST),
-	DMAE_CHANNEL(0x700, IRQ_DMAC_H(28), HPBDMA_SLAVE_SSI0_TX_MN),
+	DMAE_CHANNEL(IRQ_DMAC_H(28), HPBDMA_SLAVE_SSI0_TX_ST),
+	DMAE_CHANNEL(IRQ_DMAC_H(28), HPBDMA_SLAVE_SSI0_TX_MN),
 	/* ch.29 SSI1 */
-	DMAE_CHANNEL(0x740, IRQ_DMAC_H(29), HPBDMA_SLAVE_SSI1_RX_ST),
-	DMAE_CHANNEL(0x740, IRQ_DMAC_H(29), HPBDMA_SLAVE_SSI1_RX_MN),
+	DMAE_CHANNEL(IRQ_DMAC_H(29), HPBDMA_SLAVE_SSI1_RX_ST),
+	DMAE_CHANNEL(IRQ_DMAC_H(29), HPBDMA_SLAVE_SSI1_RX_MN),
 };
 
 static const unsigned int ts_shift[] = TS_SHIFT;

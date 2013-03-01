@@ -144,6 +144,8 @@
 #define HPB_DMA_SLAVE_NUMBER 256
 #define HPB_DMA_TCR_MAX 0x03FFFFFF	/* 64MB */
 
+#define HPB_DMA_CHANNEL_OFFSET 0x40
+
 #define to_hpb_chan(chan) container_of(chan, struct hpb_dmae_chan, common)
 #define to_hpb_desc(lh) container_of(lh, struct hpb_desc, node)
 #define tx_to_hpb_desc(tx) container_of(tx, struct hpb_desc, async_tx)
@@ -229,7 +231,6 @@ struct hpb_dmae_slave_config {
 };
 
 struct hpb_dmae_channel {
-	unsigned int	offset;
 	unsigned int	ch_irq;
 	unsigned int	s_id;
 };

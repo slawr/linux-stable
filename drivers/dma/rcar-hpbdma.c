@@ -491,8 +491,8 @@ static int hpb_dmae_alloc_chan_resources(struct dma_chan *chan)
 			if (chan_pdata->s_id == param->slave_id) {
 				hpb_chan->id = param->slave_id;
 				hpb_chan->base =
-					 hpbdev->chan_reg + chan_pdata->offset
-					  / sizeof(u32);
+					 hpbdev->chan_reg + (cfg->dma_ch *
+					 HPB_DMA_CHANNEL_OFFSET / sizeof(u32));
 				hpb_chan->irq = chan_pdata->ch_irq;
 				dev_dbg(hpb_chan->dev,
 					 "  Detect Slave device\n");
@@ -500,8 +500,8 @@ static int hpb_dmae_alloc_chan_resources(struct dma_chan *chan)
 					 " -- slave_id          :0x%x\n"
 					 , hpb_chan->id);
 				dev_dbg(hpb_chan->dev,
-					 " -- chan_pdata->offset:0x%x\n"
-					 , chan_pdata->offset);
+					 " -- dma chan          :%d\n"
+					 , cfg->dma_ch);
 				dev_dbg(hpb_chan->dev,
 					 " -- hpb_chan->irq     :%d\n"
 					 , hpb_chan->irq);
