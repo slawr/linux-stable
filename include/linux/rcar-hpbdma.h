@@ -82,65 +82,42 @@
 #define DDBGR	0x38
 #define DDBGR2	0x3C
 
-#define		ASRST41		(1 << 10)	/* SDHI3 */
-#define		ASRST40		(1 << 9)	/* SDHI3 */
-#define		ASRST39		(1 << 8)	/* SDHI3 */
-#define		ASRST27		(1 << 7)	/* SDHI2 */
-#define		ASRST26		(1 << 6)	/* SDHI2 */
-#define		ASRST25		(1 << 5)	/* SDHI2 */
-#define		ASRST23		(1 << 3)	/* SDHI0 */
-#define		ASRST22		(1 << 2)	/* SDHI0 */
-#define		ASRST21		(1 << 1)	/* SDHI0 */
+#define ASYNC_RESET_OFFSET(x)	((x == 20) ? 0 : \
+				((x == 21) ? 1 : \
+				((x == 22) ? 2 : \
+				((x == 23) ? 3 : \
+				((x == 24) ? 4 : \
+				((x == 25) ? 5 : \
+				((x == 26) ? 6 : \
+				((x == 27) ? 7 : \
+				((x == 39) ? 8 : \
+				((x == 40) ? 9 : \
+				((x == 41) ? 10 : \
+				((x == 43) ? 11 : 0))))))))))))
+#define ASYNC_RESET(chan)	(1 << ASYNC_RESET_OFFSET(chan))
 
-#define		ASMD41_SINGLE	(1 << 19)	/* SDHI3 */
-#define		ASMD41_MULTI	(0 << 19)	/* SDHI3 */
-#define		ASBTMD41_BURST	(1 << 18)	/* SDHI3 */
-#define		ASBTMD41_NBURST	(0 << 18)	/* SDHI3 */
-#define		ASMD40_SINGLE	(1 << 17)	/* SDHI3 */
-#define		ASMD40_MULTI	(0 << 17)	/* SDHI3 */
-#define		ASBTMD40_BURST	(1 << 16)	/* SDHI3 */
-#define		ASBTMD40_NBURST	(0 << 16)	/* SDHI3 */
-#define		ASMD39_SINGLE	(1 << 15)	/* SDHI3 */
-#define		ASMD39_MULTI	(0 << 15)	/* SDHI3 */
-#define		ASBTMD39_BURST	(1 << 14)	/* SDHI3 */
-#define		ASBTMD39_NBURST	(0 << 14)	/* SDHI3 */
-#define		ASMD27_SINGLE	(1 << 13)	/* SDHI2 */
-#define		ASMD27_MULTI	(0 << 13)	/* SDHI2 */
-#define		ASBTMD27_BURST	(1 << 12)	/* SDHI2 */
-#define		ASBTMD27_NBURST	(0 << 12)	/* SDHI2 */
-#define		ASMD26_SINGLE	(1 << 11)	/* SDHI2 */
-#define		ASMD26_MULTI	(0 << 11)	/* SDHI2 */
-#define		ASBTMD26_BURST	(1 << 10)	/* SDHI2 */
-#define		ASBTMD26_NBURST	(0 << 10)	/* SDHI2 */
-#define		ASMD25_SINGLE	(1 << 9)	/* SDHI2 */
-#define		ASMD25_MULTI	(0 << 9)	/* SDHI2 */
-#define		ASBTMD25_BURST	(1 << 8)	/* SDHI2 */
-#define		ASBTMD25_NBURST	(0 << 8)	/* SDHI2 */
-#define		ASMD23_SINGLE	(1 << 7)	/* SDHI1 */
-#define		ASMD23_MULTI	(0 << 7)	/* SDHI1 */
-#define		ASBTMD23_BURST	(1 << 6)	/* SDHI1 */
-#define		ASBTMD23_NBURST	(0 << 6)	/* SDHI1 */
-#define		ASMD22_SINGLE	(1 << 5)	/* SDHI1 */
-#define		ASMD22_MULTI	(0 << 5)	/* SDHI1 */
-#define		ASBTMD22_BURST	(1 << 4)	/* SDHI1 */
-#define		ASBTMD22_NBURST	(0 << 4)	/* SDHI1 */
-#define		ASMD21_SINGLE	(1 << 3)	/* SDHI1 */
-#define		ASMD21_MULTI	(0 << 3)	/* SDHI1 */
-#define		ASBTMD21_BURST	(1 << 2)	/* SDHI1 */
-#define		ASBTMD21_NBURST	(0 << 2)	/* SDHI1 */
+#define ASYNC_MD_OFFSET(x)	((x == 20) ? 0 : \
+				((x == 21) ? 2 : \
+				((x == 22) ? 4 : \
+				((x == 23) ? 6 : \
+				((x == 25) ? 8 : \
+				((x == 26) ? 10 : \
+				((x == 27) ? 12 : \
+				((x == 39) ? 14 : \
+				((x == 40) ? 16 : \
+				((x == 41) ? 18 : \
+				((x == 24) ? 20 : \
+				((x == 43) ? 22 : 0))))))))))))
+#define MD_MASK(chan)		(3 << ASYNC_MD_OFFSET(chan))
+#define ASMD_SINGLE(chan)	(1 << (ASYNC_MD_OFFSET(chan)+1))
+#define ASMD_MULTI(chan)	(0 << (ASYNC_MD_OFFSET(chan)+1))
+#define ASBTMD_BURST(chan)	(1 << ASYNC_MD_OFFSET(chan))
+#define ASBTMD_NBURST(chan)	(0 << ASYNC_MD_OFFSET(chan))
 
-#define MD_MASK(x)	((x == 20) ? (3 << 0) : \
-			((x == 21) ? (3 << 2) : \
-			((x == 22) ? (3 << 4) : \
-			((x == 23) ? (3 << 6) : \
-			((x == 25) ? (3 << 8) : \
-			((x == 26) ? (3 << 10) : \
-			((x == 27) ? (3 << 12) : \
-			((x == 39) ? (3 << 14) : \
-			((x == 40) ? (3 << 16) : \
-			((x == 41) ? (3 << 18) : \
-			((x == 24) ? (3 << 20) : \
-			((x == 43) ? (3 << 22) : 0))))))))))))
+#define ASYNC_MD_SINGLE		(1 << 0)
+#define ASYNC_MD_MULTI		(1 << 1)
+#define ASYNC_BTMD_BURST	(1 << 2)
+#define ASYNC_BTMD_NBURST	(1 << 3)
 
 /* DMA common register*/
 #define DTIMR			0x00
@@ -243,7 +220,6 @@ struct hpb_dmae_slave_config {
 	dma_addr_t	addr;
 	u32		dcr;
 	u32		port;
-	u32		rstr;
 	u32		mdr;
 	u32		flags;
 #define	HPB_DMAE_SET_ASYNC_RESET	(1<<0)

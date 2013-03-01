@@ -322,9 +322,16 @@ static void hpb_chan_xfer_ld_queue(struct hpb_dmae_chan *hpb_chan)
 	struct hpb_dmae_device *hpbdev = to_hpb_dev(hpb_chan);
 	struct hpb_dmae_slave *param = hpb_chan->common.private;
 
-	if (param->config->flags & HPB_DMAE_SET_ASYNC_MODE)
+	if (param->config->flags & HPB_DMAE_SET_ASYNC_MODE) {
+		u32 mdr = 0;
+		if (param->config->mdr & ASYNC_MD_SINGLE)
+			mdr |= ASMD_SINGLE(param->config->dma_ch);
+		if (param->config->mdr & ASYNC_BTMD_BURST)
+			mdr |= ASBTMD_BURST(param->config->dma_ch);
+
 		dmae_set_async_mode(hpbdev, MD_MASK(param->config->dma_ch),
-					param->config->mdr);
+					mdr);
+	}
 	dmae_select_shpt(hpbdev, param->config->dma_ch, param->config->flags);
 	dmae_set_dcr(hpb_chan, param->config->dcr);
 	dmae_set_port(hpb_chan, param->config->port);
@@ -337,7 +344,8 @@ static void hpb_chan_xfer_ld_queue(struct hpb_dmae_chan *hpb_chan)
 				desc->hw.tcr, desc->hw.sar, desc->hw.dar);
 
 			if (param->config->flags & HPB_DMAE_SET_ASYNC_RESET)
-				dmae_async_reset(hpbdev, param->config->rstr);
+				dmae_async_reset(hpbdev,
+					ASYNC_RESET(param->config->dma_ch));
 
 			/* Get the ld start address from ld_queue */
 			if (hpb_chan->tran_mode == TRAN_SINGLE) {
