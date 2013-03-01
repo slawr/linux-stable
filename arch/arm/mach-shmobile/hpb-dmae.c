@@ -95,10 +95,8 @@ static const struct hpb_dmae_channel rcar_dmae_channels[] = {
 	DMAE_CHANNEL(IRQ_DMAC_H(22), HPBDMA_SLAVE_SDHI0_RX),
 	/* ch.28 SSI0 */
 	DMAE_CHANNEL(IRQ_DMAC_H(28), HPBDMA_SLAVE_SSI0_TX_ST),
-	DMAE_CHANNEL(IRQ_DMAC_H(28), HPBDMA_SLAVE_SSI0_TX_MN),
 	/* ch.29 SSI1 */
 	DMAE_CHANNEL(IRQ_DMAC_H(29), HPBDMA_SLAVE_SSI1_RX_ST),
-	DMAE_CHANNEL(IRQ_DMAC_H(29), HPBDMA_SLAVE_SSI1_RX_MN),
 };
 
 static const unsigned int ts_shift[] = TS_SHIFT;
