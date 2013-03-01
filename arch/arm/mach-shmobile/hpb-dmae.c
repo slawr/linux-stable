@@ -65,6 +65,23 @@ static const struct hpb_dmae_slave_config rcar_dmae_slaves[] = {
 				HPB_DMAE_SET_SHPT1,
 		.dma_ch	= 22,
 	}, {
+		.id	= HPBDMA_SLAVE_MMC0_TX,
+		.addr	= 0xffe5a000 + 0x34,
+		.dcr	= SPDS_32BIT | DMDL | DPDS_32BIT,
+		.mdr	= ASYNC_MD_MULTI | ASYNC_BTMD_NBURST,
+		.port	= 0x0100,
+		.flags  = HPB_DMAE_SET_ASYNC_RESET | HPB_DMAE_SET_ASYNC_MODE,
+		.dma_ch	= 24,
+	}, {
+		.id	= HPBDMA_SLAVE_MMC0_RX,
+		.addr	= 0xffe5a000 + 0x34,
+		.dcr	= SPDS_32BIT | SMDL | DPDS_32BIT,
+		.mdr	= ASYNC_MD_MULTI | ASYNC_BTMD_NBURST,
+		.port	= 0x0100,
+		.flags  = HPB_DMAE_SET_ASYNC_RESET | HPB_DMAE_SET_ASYNC_MODE |
+				HPB_DMAE_SET_SHPT1,
+		.dma_ch	= 24,
+	}, {
 		.id	= HPBDMA_SLAVE_SSI0_TX_ST,
 		.addr	= 0xffd90000 + 0x1008,
 		.dcr	= CT | DIP | SPDS_32BIT | DMDL | DPDS_32BIT,
@@ -78,6 +95,23 @@ static const struct hpb_dmae_slave_config rcar_dmae_slaves[] = {
 		.port	= 0x0101,
 		.flags	= 0,
 		.dma_ch	= 29,
+	}, {
+		.id	= HPBDMA_SLAVE_MMC1_TX,
+		.addr	= 0xffe5b000 + 0x34,
+		.dcr	= SPDS_32BIT | DMDL | DPDS_32BIT,
+		.mdr	= ASYNC_MD_MULTI | ASYNC_BTMD_NBURST,
+		.port	= 0x0100,
+		.flags  = HPB_DMAE_SET_ASYNC_RESET | HPB_DMAE_SET_ASYNC_MODE,
+		.dma_ch	= 43,
+	}, {
+		.id	= HPBDMA_SLAVE_MMC1_RX,
+		.addr	= 0xffe5b000 + 0x34,
+		.dcr	= SPDS_32BIT | SMDL | DPDS_32BIT,
+		.mdr	= ASYNC_MD_MULTI | ASYNC_BTMD_NBURST,
+		.port	= 0x0100,
+		.flags  = HPB_DMAE_SET_ASYNC_RESET | HPB_DMAE_SET_ASYNC_MODE |
+				HPB_DMAE_SET_SHPT1,
+		.dma_ch	= 43,
 	},
 };
 
@@ -93,10 +127,16 @@ static const struct hpb_dmae_channel rcar_dmae_channels[] = {
 	DMAE_CHANNEL(IRQ_DMAC_H(21), HPBDMA_SLAVE_SDHI0_TX),
 	/* ch.22 SD0 */
 	DMAE_CHANNEL(IRQ_DMAC_H(22), HPBDMA_SLAVE_SDHI0_RX),
+	/* ch.24 MMC0 */
+	DMAE_CHANNEL(IRQ_DMAC_H(24), HPBDMA_SLAVE_MMC0_TX),
+	DMAE_CHANNEL(IRQ_DMAC_H(24), HPBDMA_SLAVE_MMC0_RX),
 	/* ch.28 SSI0 */
 	DMAE_CHANNEL(IRQ_DMAC_H(28), HPBDMA_SLAVE_SSI0_TX_ST),
 	/* ch.29 SSI1 */
 	DMAE_CHANNEL(IRQ_DMAC_H(29), HPBDMA_SLAVE_SSI1_RX_ST),
+	/* ch.43 MMC1 */
+	/*DMAE_CHANNEL(IRQ_DMAC_H(43), HPBDMA_SLAVE_MMC1_TX),*/
+	/*DMAE_CHANNEL(IRQ_DMAC_H(43), HPBDMA_SLAVE_MMC1_RX),*/
 };
 
 static const unsigned int ts_shift[] = TS_SHIFT;
