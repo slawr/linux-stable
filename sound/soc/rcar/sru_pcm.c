@@ -217,7 +217,7 @@ static int sru_init(void)
 	sru_ssi_init();
 
 	/* SSI_MODE0 setting (SSI independant) */
-	sru_or_writel((SSI_MODE0_IND0 | SSI_MODE0_IND1),
+	sru_or_writel((SSI_MODE0_IND(0) | SSI_MODE0_IND(1)),
 			&audioinfo.srureg->ssi_mode0);
 
 	/* SSI_MODE1 setting */
@@ -762,11 +762,11 @@ static int sru_probe(struct platform_device *pdev)
 
 	audioinfo.srureg = (struct sru_regs *)mem;
 
-	/* CODEC#1 setting */
+	/* CODEC#1 setting (SSI0,SSI1) */
 	audioinfo.ssireg[PLAY] =
-		(struct ssi_regs *)(mem + SSI0_BASE);
+		(struct ssi_regs *)(mem + SSI_BASE(0));
 	audioinfo.ssireg[CAPT] =
-		(struct ssi_regs *)(mem + SSI1_BASE);
+		(struct ssi_regs *)(mem + SSI_BASE(1));
 
 	ret = snd_soc_register_platform(&pdev->dev, &sru_soc_platform);
 	if (ret < 0) {
