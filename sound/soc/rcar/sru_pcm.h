@@ -28,6 +28,8 @@
 	define
 
 ************************************************************************/
+#define NR_SSI_CHANS		9
+
 /* buffer information */
 #define PERIOD_BYTES_MIN	(4 * 1024)
 #define PERIOD_BYTES_MAX	(4 * 1024)
@@ -502,10 +504,10 @@ struct rcar_pcm_info {
 };
 
 struct rcar_audio_info {
-	struct sru_regs *srureg;	/* sru common register      */
-	struct src_regs *srcreg[2];	/* [0]:playback [1]:capture */
-	struct ssi_regs *ssireg[2];	/* [0]:playback [1]:capture */
-	struct hpbdma_pregs *dmareg[2];	/* [0]:playback [1]:capture */
+	struct sru_regs *srureg;		/* sru common register      */
+	struct src_regs *srcreg[NR_SSI_CHANS];
+	struct ssi_regs *ssireg[NR_SSI_CHANS];
+	struct hpbdma_pregs *dmareg[NR_SSI_CHANS];
 };
 
 #endif	/* __SRU_PCM_H__ */

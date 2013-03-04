@@ -43,8 +43,7 @@
 
 static struct rcar_audio_info audioinfo;
 static spinlock_t sru_lock;	/* for sru common register  */
-static struct clk *ssi0_clk;
-static struct clk *ssi1_clk;
+static struct clk *ssi_clk[NR_SSI_CHANS];
 static struct clk *sru_clk;
 
 static void __iomem *adg_io;
@@ -137,32 +136,47 @@ static int sru_ssi_init(void)
 	writel(SSIWS_ST, &audioinfo.ssireg[PLAY]->wsr);
 	writel(SSICR_C4643_ST, &audioinfo.ssireg[CAPT]->cr);
 
+	/* SSI7/SSI8 */
+	writel(SSICR_P4643_ST, &audioinfo.ssireg[7]->cr);
+	writel(SSIWS_ST, &audioinfo.ssireg[7]->wsr);
+	writel(SSICR_C4643_ST, &audioinfo.ssireg[8]->cr);
+
 	FNC_EXIT
 	return 0;
+}
+
+static void sru_ssi_start_n(int ssi_chan)
+{
+	u32 val;
+
+	val = readl(&audioinfo.ssireg[ssi_chan]->cr);
+	val |= (SSICR_DMEN | SSICR_UIEN | SSICR_UIEN | SSICR_ENABLE);
+	writel(val, &audioinfo.ssireg[ssi_chan]->cr);
+}
+
+static void sru_ssi_stop_n(int ssi_chan)
+{
+	u32 val;
+
+	val = readl(&audioinfo.ssireg[ssi_chan]->cr);
+	val &= ~(SSICR_DMEN | SSICR_UIEN | SSICR_UIEN | SSICR_ENABLE);
+	writel(val, &audioinfo.ssireg[ssi_chan]->cr);
 }
 
 static void sru_ssi_start(struct snd_pcm_substream *substream)
 {
 	int dir = substream->stream == SNDRV_PCM_STREAM_CAPTURE;
-	u32 val;
 
-	FNC_ENTRY
-	val = readl(&audioinfo.ssireg[dir]->cr);
-	val |= (SSICR_DMEN | SSICR_UIEN | SSICR_UIEN | SSICR_ENABLE);
-	writel(val, &audioinfo.ssireg[dir]->cr);
-	FNC_EXIT
+	/* SSI0/1 */
+	sru_ssi_start_n(dir);
 }
 
 static void sru_ssi_stop(struct snd_pcm_substream *substream)
 {
 	int dir = substream->stream == SNDRV_PCM_STREAM_CAPTURE;
-	u32 val;
 
-	FNC_ENTRY
-	val = readl(&audioinfo.ssireg[dir]->cr);
-	val &= ~(SSICR_DMEN | SSICR_UIEN | SSICR_UIEN | SSICR_ENABLE);
-	writel(val, &audioinfo.ssireg[dir]->cr);
-	FNC_EXIT
+	/* SSI0/1 */
+	sru_ssi_stop_n(dir);
 }
 
 static int sru_init(void)
@@ -636,6 +650,7 @@ EXPORT_SYMBOL_GPL(sru_soc_platform);
 static int sru_probe(struct platform_device *pdev)
 {
 	int ret = 0;
+	int ssi_chan;
 	struct resource *sru_res;
 	struct resource *sru_region;
 	struct resource *adg_res;
@@ -649,23 +664,20 @@ static int sru_probe(struct platform_device *pdev)
 	}
 
 	/* request clocks */
-	ssi0_clk = clk_get(&pdev->dev, "ssi0");
-	if (IS_ERR(ssi0_clk)) {
-		dev_err(&pdev->dev, "Unable to get ssi0 clock\n");
-		ret = PTR_ERR(ssi0_clk);
-		goto error_clk_put;
-	}
-
-	ssi1_clk = clk_get(&pdev->dev, "ssi1");
-	if (IS_ERR(ssi1_clk)) {
-		dev_err(&pdev->dev, "Unable to get ssi1 clock\n");
-		ret = PTR_ERR(ssi1_clk);
-		goto error_clk_put;
+	for (ssi_chan = 0; ssi_chan < NR_SSI_CHANS; ssi_chan++) {
+		char clk_name[] = "ssi?";
+		clk_name[3] = '0' + ssi_chan;
+		ssi_clk[ssi_chan] = clk_get(&pdev->dev, clk_name);
+		if (IS_ERR(ssi_clk[ssi_chan])) {
+			dev_err(&pdev->dev, "Unable to get ssi%d clock\n", ssi_chan);
+			ret = PTR_ERR(ssi_clk[ssi_chan]);
+			goto error_clk_put;
+		}
 	}
 
 	sru_clk = clk_get(&pdev->dev, "sru");
 	if (IS_ERR(sru_clk)) {
-		dev_err(&pdev->dev, "Unable to get ssi2 clock\n");
+		dev_err(&pdev->dev, "Unable to get sru clock\n");
 		ret = PTR_ERR(sru_clk);
 		goto error_clk_put;
 	}
@@ -714,17 +726,17 @@ static int sru_probe(struct platform_device *pdev)
 		goto error_unmap;
 	}
 
-	clk_enable(ssi0_clk);
-	clk_enable(ssi1_clk);
+	for (ssi_chan = 0; ssi_chan < NR_SSI_CHANS; ssi_chan++) {
+		clk_enable(ssi_clk[ssi_chan]);
+	}
 	clk_enable(sru_clk);
 
 	audioinfo.srureg = (struct sru_regs *)mem;
 
-	/* CODEC#1 setting (SSI0,SSI1) */
-	audioinfo.ssireg[PLAY] =
-		(struct ssi_regs *)(mem + SSI_BASE(0));
-	audioinfo.ssireg[CAPT] =
-		(struct ssi_regs *)(mem + SSI_BASE(1));
+	/* Map SSI registers */
+	for (ssi_chan = 0; ssi_chan < NR_SSI_CHANS; ssi_chan++) {
+		audioinfo.ssireg[ssi_chan] = (struct ssi_regs *)(mem + SSI_BASE(ssi_chan));
+	}
 
 	ret = snd_soc_register_platform(&pdev->dev, &sru_soc_platform);
 	if (ret < 0) {
@@ -763,23 +775,26 @@ error_release:
 error_clk_put:
 	if (!IS_ERR(sru_clk))
 		clk_put(sru_clk);
-	if (!IS_ERR(ssi0_clk))
-		clk_put(ssi0_clk);
-	if (!IS_ERR(ssi1_clk))
-		clk_put(ssi1_clk);
+	for (ssi_chan = 0; ssi_chan < NR_SSI_CHANS; ssi_chan++) {
+		if (!IS_ERR(ssi_clk[ssi_chan]))
+			clk_put(ssi_clk[ssi_chan]);
+	}
 
 	return ret;
 }
 
 static int sru_remove(struct platform_device *pdev)
 {
+	int ssi_chan;
+
 	FNC_ENTRY
 
 	snd_soc_unregister_dais(&pdev->dev, ARRAY_SIZE(sru_soc_dai));
 	snd_soc_unregister_platform(&pdev->dev);
 
-	clk_disable(ssi0_clk);
-	clk_disable(ssi1_clk);
+	for (ssi_chan = 0; ssi_chan < NR_SSI_CHANS; ssi_chan++) {
+		clk_disable(ssi_clk[ssi_chan]);
+	}
 	clk_disable(sru_clk);
 
 	FNC_EXIT
