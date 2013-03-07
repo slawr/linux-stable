@@ -66,6 +66,18 @@ static struct intc2_child usbh1_child[] = {
 };
 
 /*
+ * MMCIF children
+ */
+static struct intc2_child mmc0_child[] = {
+	{ (1<<1), IRQ_MMC_0_ERR },
+	{ (1<<2), IRQ_MMC_0_ACC },
+};
+static struct intc2_child mmc1_child[] = {
+	{ (1<<17), IRQ_MMC_1_ERR },
+	{ (1<<18), IRQ_MMC_1_ACC },
+};
+
+/*
  * HPB-DMAC children
  */
 static struct intc2_child dmach00_10_child[] = {
@@ -152,6 +164,18 @@ static struct intc2_parent intc2_parent_desc[] = {
 		IOMEM(0xfe782058),
 		ARRAY_SIZE(usbh1_child),
 		usbh1_child
+	},
+	{
+		gic_spi(70),
+		IOMEM(0xFE782064),
+		ARRAY_SIZE(mmc0_child),
+		mmc0_child
+	},
+	{
+		gic_spi(71),
+		IOMEM(0xFE782064),
+		ARRAY_SIZE(mmc1_child),
+		mmc1_child
 	},
 	{
 		gic_spi(110),

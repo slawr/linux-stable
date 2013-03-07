@@ -15,7 +15,11 @@
 #define IRQ_USBH_0_EHCI (209 + 1)
 #define IRQ_USBH_1_OHCI (209 + 2)
 #define IRQ_USBH_1_EHCI (209 + 3)
+#define IRQ_MMC_0_ERR   (209 + 4)
+#define IRQ_MMC_0_ACC   (209 + 5)
+#define IRQ_MMC_1_ERR   (209 + 6)
+#define IRQ_MMC_1_ACC   (209 + 7)
 
-#define IRQ_DMAC_H(n)	(209 + 4 + (n))
+#define IRQ_DMAC_H(n)	(209 + 8 + (n))
 
 #endif /* __ASM_MACH_IRQS_H */
