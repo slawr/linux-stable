@@ -91,6 +91,8 @@
 #define PMHP		PMHP_MASK
 
 /* PW_MGMT3 (Power Management 3) */
+#define INR0		2
+#define INL0		1
 #define PMADR		0 /* MIC L / ADC R Power Management */
 #define PMADR_BIT	(1 << PMADR)
 
@@ -161,7 +163,29 @@ static const struct snd_kcontrol_new ak4642_lout_mixer_controls[] = {
 	SOC_DAPM_SINGLE("DACL", SG_SL1, DACL, 1, 0),
 };
 
+/* Input MUXs */
+static const char *ak4642_lin_mux_texts[] = {"LIN1", "LIN2"};
+static const struct soc_enum ak4642_lin_mux_enum =
+	SOC_ENUM_SINGLE(PW_MGMT3, INL0,
+			ARRAY_SIZE(ak4642_lin_mux_texts),
+			ak4642_lin_mux_texts);
+static const struct snd_kcontrol_new ak4642_lin_mux_control =
+	SOC_DAPM_ENUM("Route", ak4642_lin_mux_enum);
+
+static const char *ak4642_rin_mux_texts[] = {"RIN1", "RIN2"};
+static const struct soc_enum ak4642_rin_mux_enum =
+	SOC_ENUM_SINGLE(PW_MGMT3, INR0,
+			ARRAY_SIZE(ak4642_rin_mux_texts),
+			ak4642_rin_mux_texts);
+static const struct snd_kcontrol_new ak4642_rin_mux_control =
+	SOC_DAPM_ENUM("Route", ak4642_rin_mux_enum);
+
 static const struct snd_soc_dapm_widget ak4642_dapm_widgets[] = {
+	/* Inputs */
+	SND_SOC_DAPM_INPUT("LIN1"),
+	SND_SOC_DAPM_INPUT("RIN1"),
+	SND_SOC_DAPM_INPUT("LIN2"),
+	SND_SOC_DAPM_INPUT("RIN2"),
 
 	/* Outputs */
 	SND_SOC_DAPM_OUTPUT("HPOUTL"),
@@ -181,6 +205,12 @@ static const struct snd_soc_dapm_widget ak4642_dapm_widgets[] = {
 
 	/* DAC */
 	SND_SOC_DAPM_DAC("DAC", "HiFi Playback", PW_MGMT1, PMDAC, 0),
+
+	/* Input MUXs */
+	SND_SOC_DAPM_MUX("LIN MUX", 0, 0, 0,
+			 &ak4642_lin_mux_control),
+	SND_SOC_DAPM_MUX("RIN MUX", 0, 0, 0,
+			 &ak4642_rin_mux_control),
 };
 
 static const struct snd_soc_dapm_route ak4642_intercon[] = {
@@ -198,6 +228,13 @@ static const struct snd_soc_dapm_route ak4642_intercon[] = {
 	{"DACH", NULL, "DAC"},
 
 	{"LINEOUT Mixer", "DACL", "DAC"},
+
+	/* Inputs */
+	{"LIN MUX", "LIN1", "LIN1"},
+	{"LIN MUX", "LIN2", "LIN2"},
+
+	{"RIN MUX", "RIN1", "RIN1"},
+	{"RIN MUX", "RIN2", "RIN2"},
 };
 
 /* codec private data */
