@@ -211,6 +211,12 @@ static const struct snd_soc_dapm_widget ak4642_dapm_widgets[] = {
 			 &ak4642_lin_mux_control),
 	SND_SOC_DAPM_MUX("RIN MUX", 0, 0, 0,
 			 &ak4642_rin_mux_control),
+
+	/* MICBIAS */
+	SND_SOC_DAPM_MICBIAS("Mic Bias", SG_SL1, PMMP, 0),
+
+	/* Mic gain */
+	SND_SOC_DAPM_PGA("Mic Gain", SG_SL1, MGAIN0, 0, NULL, 0),
 };
 
 static const struct snd_soc_dapm_route ak4642_intercon[] = {
@@ -297,16 +303,13 @@ static int ak4642_dai_startup(struct snd_pcm_substream *substream,
 		 *
 		 * PLL Master Mode
 		 * Audio I/F Format:MSB justified (ADC & DAC)
-		 * Pre MIC AMP:+20dB
-		 * MIC Power On
 		 * ALC setting:Refer to Table 35
 		 * ALC bit=“1”
 		 *
 		 * This operation came from example code of
 		 * "ASAHI KASEI AK4642" (japanese) manual p94.
 		 */
-		snd_soc_update_bits(codec, SG_SL1, PMMP_BIT, PMMP_BIT);
-		snd_soc_update_bits(codec, SG_SL1, MGAIN0_BIT, MGAIN0_BIT);
+		snd_soc_update_bits(codec, SG_SL1, MGAIN0_BIT, 0);
 		snd_soc_write(codec, TIMER, ZTM(0x3) | WTM(0x3));
 		snd_soc_write(codec, ALC_CTL1, ALC | LMTH0);
 		snd_soc_update_bits(codec, PW_MGMT1, PMADL_BIT, PMADL_BIT);
@@ -467,9 +470,11 @@ static int ak4642_set_bias_level(struct snd_soc_codec *codec,
 	switch (level) {
 	case SND_SOC_BIAS_OFF:
 		snd_soc_write(codec, PW_MGMT1, 0x00);
+		snd_soc_update_bits(codec, SG_SL1, PMMP_BIT, 0);
 		break;
 	default:
 		snd_soc_update_bits(codec, PW_MGMT1, (1 << PMVCM), (1 << PMVCM));
+		snd_soc_update_bits(codec, SG_SL1, PMMP_BIT, PMMP_BIT);
 		break;
 	}
 	codec->dapm.bias_level = level;
