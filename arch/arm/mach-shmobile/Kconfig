@@ -148,6 +148,41 @@ config MACH_MARZEN_REE_EDC_EXP_BOARD_24BIT_VIN
 	  This uses 24-bit RGB data on VIN0 with external HSYNC & VSYNC
 	  signals.
 
+config MACH_HURRICANE
+	bool "REE-EDC Hurricane Board"
+	depends on ARCH_R8A7779
+	select ARCH_REQUIRE_GPIOLIB
+	select VIDEO_TFP410
+	help
+	  Include support for the REE-EDC R-Car H1 Hurricane Evaluation Board.
+
+config MACH_HURRICANE_EMMC
+	depends on MACH_HURRICANE
+	bool "eMMC Support"
+	select MMC
+	select MMC_BLOCK
+	select MMC_SH_MMCIF
+	help
+	  Include support for eMMC (N.B. Enabling eMMC remaps the Debug Ethernet to CS1).
+
+choice
+	depends on MACH_HURRICANE
+	prompt "Select Multiplexed Hurricane Platform features"
+
+	config MACH_HURRICANE_VIN2
+		bool "Video In 2"
+		help
+		  Include support for video input using VIN2.
+		  Removes support for display output on DU1.
+
+	config MACH_HURRICANE_DU1
+		bool "Display Unit 1"
+		help
+		  Include support for dual display using the 2nd display unit DU1.
+		  Removes support for video input on VIN2.
+
+endchoice
+
 comment "SH-Mobile System Configuration"
 
 config CPU_HAS_INTEVT
