@@ -521,7 +521,7 @@ static int ov10635_get_pclk(int xvclk, int *htsmin, int *vtsmin,
 				if (pclk > 96000000)
 					continue;
 
-				hts = *htsmin + 200 + pclk/300000;
+				hts = *htsmin + 210 + pclk/300000;
 
 				/* 2 clock cycles for every YUV422 pixel */
 				if (pclk < (((hts * *vtsmin)/fps_denominator)
