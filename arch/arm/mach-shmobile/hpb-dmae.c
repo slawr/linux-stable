@@ -100,6 +100,20 @@ static const struct hpb_dmae_slave_config rcar_dmae_slaves[] = {
 		.flags	= 0,
 		.dma_ch	= 29,
 	}, {
+		.id	= HPBDMA_SLAVE_SSI7_TX_ST,
+		.addr	= 0xffd91000 + (7*SSI_CHAN_OFFSET) + SSI_TX_OFFSET,
+		.dcr	= CT | DIP | SPDS_32BIT | DMDL | DPDS_32BIT,
+		.port	= 0x0707,
+		.flags	= 0,
+		.dma_ch	= 35,
+	}, {
+		.id	= HPBDMA_SLAVE_SSI8_RX_ST,
+		.addr	= 0xffd91000 + (8*SSI_CHAN_OFFSET) + SSI_RX_OFFSET,
+		.dcr	= CT | DIP | SMDL | SPDS_32BIT | DPDAM | DPDS_32BIT,
+		.port	= 0x0808,
+		.flags	= 0,
+		.dma_ch	= 36,
+	}, {
 		.id	= HPBDMA_SLAVE_MMC1_TX,
 		.addr	= 0xffe5b000 + 0x34,
 		.dcr	= SPDS_32BIT | DMDL | DPDS_32BIT,
@@ -138,6 +152,10 @@ static const struct hpb_dmae_channel rcar_dmae_channels[] = {
 	DMAE_CHANNEL(IRQ_DMAC_H(28), HPBDMA_SLAVE_SSI0_TX_ST),
 	/* ch.29 SSI1 */
 	DMAE_CHANNEL(IRQ_DMAC_H(29), HPBDMA_SLAVE_SSI1_RX_ST),
+	/* ch.35 SSI7 */
+	DMAE_CHANNEL(IRQ_DMAC_H(35), HPBDMA_SLAVE_SSI7_TX_ST),
+	/* ch.36 SSI8 */
+	DMAE_CHANNEL(IRQ_DMAC_H(36), HPBDMA_SLAVE_SSI8_RX_ST),
 	/* ch.43 MMC1 */
 	/*DMAE_CHANNEL(IRQ_DMAC_H(43), HPBDMA_SLAVE_MMC1_TX),*/
 	/*DMAE_CHANNEL(IRQ_DMAC_H(43), HPBDMA_SLAVE_MMC1_RX),*/
