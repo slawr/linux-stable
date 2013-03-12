@@ -117,11 +117,15 @@ static int adg_init(void)
 	FNC_ENTRY
 
 	/* BRGA/BRGB clock select */
+	/* NOTE: BRGA/BRGB are currently not used */
 	adg_setup_brgx(adg_io, ADG_AUDIO_CLKA, ADG_AUDIO_CLKA, 0);
 
 	/* SSI0/SSI1 clock setting */
 	adg_select_ssi_clk(adg_io, 0, ADG_DIVCLK_SEL_ACLKA, 1);
 	adg_select_ssi_clk(adg_io, 1, ADG_DIVCLK_SEL_ACLKA, 1);
+
+	/* SSI7/SSI8 (shared) clock setting */
+	adg_select_ssi_clk(adg_io, 7, ADG_DIVCLK_SEL_ACLKB, 1);
 
 	FNC_EXIT
 	return 0;
@@ -131,7 +135,7 @@ static int sru_ssi_init(void)
 {
 	FNC_ENTRY
 
-	/* SSI setting for slave */
+	/* SSI0/SSI1 setting for slave */
 	writel(SSICR_P4643_ST, &audioinfo.ssireg[PLAY]->cr);
 	writel(SSIWS_ST, &audioinfo.ssireg[PLAY]->wsr);
 	writel(SSICR_C4643_ST, &audioinfo.ssireg[CAPT]->cr);
@@ -165,18 +169,28 @@ static void sru_ssi_stop_n(int ssi_chan)
 
 static void sru_ssi_start(struct snd_pcm_substream *substream)
 {
+	struct rcar_pcm_info *rcar_priv = substream->runtime->private_data;
 	int dir = substream->stream == SNDRV_PCM_STREAM_CAPTURE;
 
-	/* SSI0/1 */
-	sru_ssi_start_n(dir);
+	if (rcar_priv->id == 0)
+		/* SSI0/1 */
+		sru_ssi_start_n(dir);
+	else
+		/* SSI7/8 */
+		sru_ssi_start_n(dir+7);
 }
 
 static void sru_ssi_stop(struct snd_pcm_substream *substream)
 {
+	struct rcar_pcm_info *rcar_priv = substream->runtime->private_data;
 	int dir = substream->stream == SNDRV_PCM_STREAM_CAPTURE;
 
-	/* SSI0/1 */
-	sru_ssi_stop_n(dir);
+	if (rcar_priv->id == 0)
+		/* SSI0/1 */
+		sru_ssi_stop_n(dir);
+	else
+		/* SSI7/8 */
+		sru_ssi_stop_n(dir+7);
 }
 
 static int sru_init(void)
@@ -190,7 +204,8 @@ static int sru_init(void)
 	sru_ssi_init();
 
 	/* SSI_MODE0 setting (SSI independant) */
-	sru_or_writel((SSI_MODE0_IND(0) | SSI_MODE0_IND(1)),
+	sru_or_writel((SSI_MODE0_IND(0) | SSI_MODE0_IND(1) |
+			SSI_MODE0_IND(7) | SSI_MODE0_IND(8)),
 			&audioinfo.srureg->ssi_mode0);
 
 	/* SSI_MODE1 setting */
@@ -215,13 +230,23 @@ static bool sru_dmae_filter(struct dma_chan *chan, void *slave)
 /* get dma slave id */
 static int sru_dmae_slave_id(struct snd_pcm_substream *substream)
 {
+	struct rcar_pcm_info *rcar_priv = substream->runtime->private_data;
 	int dir = substream->stream == SNDRV_PCM_STREAM_CAPTURE;
 	int sid;		/* dma slave id */
 
-	if (!dir) /* playback */
-		sid = HPBDMA_SLAVE_SSI0_TX_ST;
-	else /* capture */
-		sid = HPBDMA_SLAVE_SSI1_RX_ST;
+	if (rcar_priv->id == 0) {
+		/* SSI0/1 */
+		if (!dir) /* playback */
+			sid = HPBDMA_SLAVE_SSI0_TX_ST;
+		else /* capture */
+			sid = HPBDMA_SLAVE_SSI1_RX_ST;
+	} else {
+		/* SSI7/8 */
+		if (!dir) /* playback */
+			sid = HPBDMA_SLAVE_SSI7_TX_ST;
+		else /* capture */
+			sid = HPBDMA_SLAVE_SSI8_RX_ST;
+	}
 
 	return sid;
 }
@@ -413,6 +438,7 @@ static int sru_dai_startup(struct snd_pcm_substream *substream,
 	if (pcminfo == NULL)
 		return -ENOMEM;
 
+	pcminfo->id = dai->id;
 	runtime->private_data = pcminfo;
 	runtime->private_free = sru_pcm_free_stream;
 
@@ -479,7 +505,7 @@ static struct snd_pcm_hardware sru_pcm_hardware = {
 	.rate_min		= 8000,
 	.rate_max		= 48000,
 	.channels_min		= 2,
-	.channels_max		= 2,
+	.channels_max		= 9,
 	.buffer_bytes_max	= BUFFER_BYTES_MAX,
 	.period_bytes_min	= PERIOD_BYTES_MIN,
 	.period_bytes_max	= PERIOD_BYTES_MAX,
@@ -617,6 +643,23 @@ struct snd_soc_dai_driver sru_soc_dai[] = {
 	{
 		.name			= "rcar_sru_codec1",
 		.id			= 0,
+		.playback = {
+			.rates		= SNDRV_PCM_RATE_8000_48000,
+			.formats	= SNDRV_PCM_FMTBIT_S16_LE,
+			.channels_min	= 2,
+			.channels_max	= 2,
+		},
+		.capture = {
+			.rates		= SNDRV_PCM_RATE_8000_48000,
+			.formats	= SNDRV_PCM_FMTBIT_S16_LE,
+			.channels_min	= 2,
+			.channels_max	= 2,
+		},
+		.ops = &sru_dai_ops,
+	},
+	{
+		.name			= "rcar_sru_codec2",
+		.id			= 1,
 		.playback = {
 			.rates		= SNDRV_PCM_RATE_8000_48000,
 			.formats	= SNDRV_PCM_FMTBIT_S16_LE,
