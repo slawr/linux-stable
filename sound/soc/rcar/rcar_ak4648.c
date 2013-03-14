@@ -29,7 +29,7 @@ static int rcar_hurricane_pcm_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	ret = snd_soc_dai_set_fmt(codec_dai, SND_SOC_DAIFMT_CBS_CFS |
-					 SND_SOC_DAIFMT_I2S);
+					 SND_SOC_DAIFMT_LEFT_J);
 	if (ret)
 		pr_err("snd_soc_dai_set_fmt err=%d\n", ret);
 
