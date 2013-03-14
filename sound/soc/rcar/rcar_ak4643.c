@@ -56,7 +56,7 @@ static int rcar_codec1_dai_init(struct snd_soc_pcm_runtime *rtd)
 	}
 
 	ret = snd_soc_dai_set_fmt(codec, SND_SOC_DAIFMT_CBS_CFS |
-					 SND_SOC_DAIFMT_I2S);
+					 SND_SOC_DAIFMT_LEFT_J);
 	if (ret) {
 		pr_err("snd_soc_dai_set_fmt err=%d\n", ret);
 		return ret;
