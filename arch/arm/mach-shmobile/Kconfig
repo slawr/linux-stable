@@ -258,6 +258,12 @@ endmenu
 config SH_CLK_CPG
 	bool
 
+config RENESAS_RCAR_PCI
+	bool "R-Car PCI Express support"
+	depends on ARCH_R8A7779
+	select PCI
+	select NEED_MACH_IO_H
+
 source "drivers/sh/Kconfig"
 
 endif
