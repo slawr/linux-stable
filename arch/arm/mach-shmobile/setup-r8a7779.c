@@ -362,6 +362,25 @@ static struct platform_device sgx_device = {
 	.num_resources	= ARRAY_SIZE(sgx_resources),
 };
 
+/* PCI Express */
+static struct resource pcie_resources[] = {
+	{
+		.start  = 0xfe000000,
+		.end    = 0xfe07ffff,
+		.flags  = IORESOURCE_MEM,
+	}, {
+		.start  = gic_spi(101),
+		.flags  = IORESOURCE_IRQ,
+	},
+};
+
+static struct platform_device pcie_device = {
+	.name		= "pciec",
+	.id		= 0,
+	.resource	= pcie_resources,
+	.num_resources	= ARRAY_SIZE(pcie_resources),
+};
+
 static struct platform_device *r8a7779_early_devices[] __initdata = {
 	&scif0_device,
 	&scif1_device,
@@ -385,6 +404,8 @@ static struct platform_device *r8a7779_late_devices[] __initdata = {
 	&sgx_device,
 };
 
+void rcar_pcie_init(struct platform_device *);
+
 void __init r8a7779_add_standard_devices(void)
 {
 #ifdef CONFIG_CACHE_L2X0
@@ -405,6 +426,10 @@ void __init r8a7779_add_standard_devices(void)
 
 	r8a7779_add_device_to_domain(&r8a7779_sgx, &sgx_device);
 	pm_clk_add(&sgx_device.dev, "sgx");
+
+#ifdef CONFIG_RENESAS_RCAR_PCI
+	rcar_pcie_init(&pcie_device);
+#endif
 }
 
 /* do nothing for !CONFIG_SMP or !CONFIG_HAVE_TWD */
