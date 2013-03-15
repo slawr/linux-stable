@@ -1146,8 +1146,11 @@ static int rcar_vin_get_formats(struct soc_camera_device *icd, unsigned int idx,
 
 		/* First time */
 		ret = v4l2_subdev_call(sd, video, g_mbus_fmt, &mf);
-		if (ret < 0)
+		if (ret < 0) {
+			dev_err(icd->parent,
+				"SoC camera must implement g_mbus_fmt!\n");
 			return ret;
+		}
 
 		while ((mf.width > 2560 || mf.height > 1920) && shift < 4) {
 			/* Try 2560x1920, 1280x960, 640x480, 320x240 */
